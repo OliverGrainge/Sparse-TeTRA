@@ -1,6 +1,7 @@
-import os
 import logging
+import os
 from glob import glob
+
 from PIL import ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True

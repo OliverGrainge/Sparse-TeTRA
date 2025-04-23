@@ -39,6 +39,7 @@ model_module:
   model_lr: 0.00001
   lambda_lat: 1.0
   lambda_front: 1.0
+  
 trainer: 
   max_epochs: 100
   accelerator: auto

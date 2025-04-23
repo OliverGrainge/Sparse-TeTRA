@@ -1,10 +1,17 @@
-import pytorch_lightning as pl
-from .datasets import EigenPlacesDataset
-import torch
+from collections import defaultdict
 from typing import Type
+
+import pytorch_lightning as pl
+import torch
 import torch.nn as nn
-from torch.nn import Parameter
+import torchvision.transforms as T
 from pytorch_lightning.utilities.combined_loader import CombinedLoader
+from tabulate import tabulate
+from torch.nn import Parameter
+
+from ..datasets import ALL_DATASETS
+from .datasets import EigenPlacesDataset
+from .util import recall_at_k
 
 
 def move_to_device(optimizer: Type[torch.optim.Optimizer], device: str):
@@ -96,6 +103,9 @@ class EigenPlacesTrainer(pl.LightningModule):
         self,
         model: nn.Module,
         data_dir: str,
+        val_dataset_dir: str,
+        val_datasets: list[str],
+        image_size: int,
         M: int,
         N: int,
         focal_dist: int,
@@ -117,6 +127,15 @@ class EigenPlacesTrainer(pl.LightningModule):
         self.save_hyperparameters(ignore=["model"])
         self.automatic_optimization = False
 
+    def _val_transform(self):
+        return T.Compose(
+            [
+                T.Resize(self.hparams.image_size),
+                T.ToTensor(),
+                T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
+
     def setup(self, stage: str):
         if stage == "fit":
             self.groups = [
@@ -129,6 +148,7 @@ class EigenPlacesTrainer(pl.LightningModule):
                     min_images_per_class=self.hparams.min_images_per_class,
                     angle=[0, 90][n % 2],
                     visualize_classes=self.hparams.visualize_classes,
+                    image_size=self.hparams.image_size,
                 )
                 for n in range(self.hparams.groups_num * 2)
             ]
@@ -149,7 +169,9 @@ class EigenPlacesTrainer(pl.LightningModule):
         return self.model(x)
 
     def train_dataloader(self):
-        self.current_dataset_num = (self.trainer.current_epoch % self.hparams.groups_num) * 2
+        self.current_dataset_num = (
+            self.trainer.current_epoch % self.hparams.groups_num
+        ) * 2
         opt = self.optimizers()
         classifiers_optimizers = opt[:-1]
         dataloaders = {
@@ -175,7 +197,9 @@ class EigenPlacesTrainer(pl.LightningModule):
         return CombinedLoader(dataloaders, mode="min_size")
 
     def on_train_epoch_start(self):
-        self.current_dataset_num = (self.trainer.current_epoch % self.hparams.groups_num) * 2
+        self.current_dataset_num = (
+            self.trainer.current_epoch % self.hparams.groups_num
+        ) * 2
 
     def training_step(self, batch, batch_idx):
         opt = self.optimizers()
@@ -213,7 +237,7 @@ class EigenPlacesTrainer(pl.LightningModule):
             torch.optim.Adam(classifier.parameters(), lr=self.hparams.classifiers_lr)
             for classifier in self.classifiers
         ]
-        model_optimizer = [torch.optim.Adam(
-            self.model.parameters(), lr=self.hparams.model_lr)
+        model_optimizer = [
+            torch.optim.Adam(self.model.parameters(), lr=self.hparams.model_lr)
         ]
         return classifiers_optimizers + model_optimizer

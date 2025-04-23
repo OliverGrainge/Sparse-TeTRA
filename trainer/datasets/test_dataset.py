@@ -1,8 +1,9 @@
 import os
+
 import numpy as np
-from PIL import Image
 import torch.utils.data as data
 import torchvision.transforms as transforms
+from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 
 from .dataset_utils import read_images_paths
@@ -30,12 +31,8 @@ class TestDataset(data.Dataset):
 
         self.database_folder = os.path.join(dataset_folder, database_folder)
         self.queries_folder = os.path.join(dataset_folder, queries_folder)
-        self.database_paths = read_images_paths(
-            self.database_folder, get_abs_path=True
-        )
-        self.queries_paths = read_images_paths(
-            self.queries_folder, get_abs_path=True
-        )
+        self.database_paths = read_images_paths(self.database_folder, get_abs_path=True)
+        self.queries_paths = read_images_paths(self.queries_folder, get_abs_path=True)
 
         self.dataset_name = os.path.basename(dataset_folder)
 

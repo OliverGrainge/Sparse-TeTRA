@@ -1,18 +1,18 @@
-import os
-import utm
-import math
-import torch
-import random
-import imageio
 import logging
-import numpy as np
-from PIL import Image
-from PIL import ImageFile
-import torchvision.transforms as tfm
+import math
+import os
+import random
 from collections import defaultdict
 
-from .map_utils import create_map
+import imageio
+import numpy as np
+import torch
+import torchvision.transforms as tfm
+import utm
+from PIL import Image, ImageFile
+
 from .dataset_utils import read_images_paths
+from .map_utils import create_map
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -181,7 +181,9 @@ class EigenPlacesDataset(torch.utils.data.Dataset):
 
             images_paths = self.images_per_class[random_class_id]
             for path in images_paths:
-                crop = self.get_crop(self.dataset_folder + "/" + path, focal_point, self.image_size)
+                crop = self.get_crop(
+                    self.dataset_folder + "/" + path, focal_point, self.image_size
+                )
                 crop = tfm.functional.to_pil_image(crop)
                 crop.save(f"{folder}/{os.path.basename(path)}")
 

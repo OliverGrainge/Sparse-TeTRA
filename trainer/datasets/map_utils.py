@@ -1,10 +1,11 @@
-import cv2
 import math
-import imageio
-import numpy as np
+
+import cv2
 import geopy.distance
+import imageio
 import matplotlib.pyplot as plt
-from staticmap import StaticMap, Polygon
+import numpy as np
+from staticmap import Polygon, StaticMap
 
 
 def _lon_to_x(lon, zoom):
