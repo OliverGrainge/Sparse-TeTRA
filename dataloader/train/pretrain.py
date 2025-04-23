@@ -43,7 +43,7 @@ def filter_panorama_images(img: Image.Image) -> Image.Image:
         left = torch.randint(0, width - crop_width + 1, (1,)).item()
         img = img.crop((left, 0, left + crop_width, height))
     return img
-    
+
 
 class PretrainDataset(Dataset):
     def __init__(
@@ -62,14 +62,13 @@ class PretrainDataset(Dataset):
         assert self.split in ["train", "val"], "split must be either 'train' or 'val'"
         self._print_stats()
 
-        
     def _print_stats(self):
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print(f"Dataset Summary:")
         print(f"Root Directory: {self.data_dir}")
         print(f"Split: {self.split}")
         print(f"Number of Images: {len(self.img_paths)}")
-        print("="*50 + "\n")
+        print("=" * 50 + "\n")
 
     def _data_split(self, img_paths: list, split: str):
         if split == "train":

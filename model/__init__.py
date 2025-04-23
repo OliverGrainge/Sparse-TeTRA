@@ -1,3 +1,3 @@
 from functools import partial
 
-from model.models import ViT
+from model.models import BoQModel

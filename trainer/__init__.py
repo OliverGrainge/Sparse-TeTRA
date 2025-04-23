@@ -1,3 +1,4 @@
-from .pretrain import PreTrainerModule
+from .datasets import EigenPlacesDataset
+from .eigenplaces import EigenPlacesTrainer
 
-__all__ = ["PreTrainerModule"]
+__all__ = ["EigenPlacesDataset", "EigenPlacesTrainer"]

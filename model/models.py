@@ -4,9 +4,10 @@ import torch
 import torch.nn as nn
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
-
+from math import sqrt
 from model.blocks import ViTAttention, ViTFeedForward
 from model.layers import SparseTernaryLinear, TernaryLinear
+from model.heads import BoQ
 
 LAYERS_REGISTRY = {
     "linear": nn.Linear,
@@ -145,4 +146,75 @@ class ViT(nn.Module):
         x += self.pos_embedding[:, : (n + 1)]
         x = self.dropout(x)
         x = self.transformer(x)
+        return x
+
+
+
+def tokens2img(x: torch.Tensor, with_cls: bool=True) -> torch.Tensor:
+    b, n, c = x.shape
+    if with_cls:
+        x = x[:, 1:, :]
+    x = x.permute(0, 2, 1)
+    h, w = int(sqrt(n)), int(sqrt(n))
+    x = x.reshape(b, c, h, w)
+    return x
+
+class BoQModel(nn.Module): 
+    def __init__(self,
+                image_size: Union[int, Tuple[int, int]] = 224,
+                patch_size: Union[int, Tuple[int, int]] = 16,
+                dim: int = 768,
+                depth: int = 12,
+                heads: int = 12,
+                mlp_dim: int = 3072,
+                in_channels: int = 3,
+                dim_head: int = 64,
+                dropout: float = 0.0,
+                emb_dropout: float = 0,
+                embedding_norm: str = "LayerNorm",
+                embedding_linear: str = "Linear",
+                attention_linear_layer: str = "Linear",
+                attention_norm_layer: str = "LayerNorm",
+                feedforward_linear_layer: str = "Linear",
+                feedforward_norm_layer: str = "LayerNorm",
+                feedforward_activation_layer: str = "GELU", 
+                proj_channels: int = 512,
+                num_queries: int = 32,
+                num_layers: int = 2,
+                row_dim: int = 32,
+                 ):
+        super().__init__()
+        
+        self.vit = ViT(
+            image_size=image_size, 
+            patch_size=patch_size, 
+            dim=dim, 
+            depth=depth, 
+            heads=heads, 
+            mlp_dim=mlp_dim, 
+            in_channels=in_channels, 
+            dim_head=dim_head, 
+            dropout=dropout, 
+            emb_dropout=emb_dropout, 
+            embedding_norm=embedding_norm, 
+            embedding_linear=embedding_linear, 
+            attention_linear_layer=attention_linear_layer, 
+            attention_norm_layer=attention_norm_layer, 
+            feedforward_linear_layer=feedforward_linear_layer, 
+            feedforward_norm_layer=feedforward_norm_layer, 
+            feedforward_activation_layer=feedforward_activation_layer
+        )
+
+        self.boq = BoQ(
+            in_channels=dim, 
+            proj_channels=proj_channels, 
+            num_queries=num_queries, 
+            num_layers=num_layers, 
+            row_dim=row_dim
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.vit(x)
+        x = tokens2img(x, with_cls=True)
+        x = self.boq(x)[0]
         return x
