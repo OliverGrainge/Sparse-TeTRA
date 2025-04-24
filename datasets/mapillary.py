@@ -41,4 +41,4 @@ class MSLS(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"MSLS_{self.which_set}"
+        return f"MSLS"

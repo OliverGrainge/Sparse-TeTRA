@@ -9,6 +9,9 @@ from pytorch_lightning.utilities.combined_loader import CombinedLoader
 from tabulate import tabulate
 from torch.nn import Parameter
 
+from model import *
+from utils import import_model_cls
+
 from .datasets import EigenPlacesDataset
 
 
@@ -96,10 +99,13 @@ def get_iterator(
     )
 
 
-class EigenPlacesTrainer(pl.LightningModule):
+class VPRTrainer(pl.LightningModule):
     def __init__(
         self,
-        model: nn.Module,
+        # model parameters
+        model_name: str,
+        model_init_args: dict,
+        # training parameters
         data_dir: str,
         val_dataset_dir: str,
         val_datasets: list[str],
@@ -121,9 +127,14 @@ class EigenPlacesTrainer(pl.LightningModule):
         lambda_front: float,
     ):
         super().__init__()
-        self.model = model
-        self.save_hyperparameters(ignore=["model"])
+        self.save_hyperparameters()
+        self.model = self._load_model()
         self.automatic_optimization = False
+
+    def _load_model(self):
+        model_cls = import_model_cls(self.hparams.model_name)
+        model = model_cls(**self.hparams.model_init_args)
+        return model
 
     def _val_transform(self):
         return T.Compose(

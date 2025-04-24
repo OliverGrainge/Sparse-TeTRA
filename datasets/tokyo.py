@@ -41,4 +41,4 @@ class Tokyo247(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"Tokyo247_{self.which_set}"
+        return f"Tokyo247"

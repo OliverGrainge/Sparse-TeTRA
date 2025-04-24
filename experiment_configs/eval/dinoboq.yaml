@@ -4,7 +4,10 @@ baseline:
 
 eval_module: 
   val_dataset_dir: /home/oliver/datasets_drive/vpr_datasets
-  val_datasets: ["pitts30k"]
+  dataset_names:
+    - pitts30k
+    - nordland
   image_size: 322
   batch_size: 128
-  num_workers: 16
+  num_workers: 1
+  match_gpu: False

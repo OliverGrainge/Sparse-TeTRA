@@ -1,14 +1,17 @@
-import torch
 import contextlib
 import io
 import logging
 
+import torch
+
 
 def ResNet50BoQ():
-    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
+        io.StringIO()
+    ):
         model = torch.hub.load(
             "amaralibey/bag-of-queries",
-            "get_trained_boq", 
+            "get_trained_boq",
             backbone_name="resnet50",
             output_dim=16384,
         )
@@ -16,11 +19,13 @@ def ResNet50BoQ():
 
 
 def DinoBoQ():
-    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
+        io.StringIO()
+    ):
         model = torch.hub.load(
             "amaralibey/bag-of-queries",
             "get_trained_boq",
-            backbone_name="dinov2", 
+            backbone_name="dinov2",
             output_dim=12288,
         )
     original_forward = model.forward  # ← Save before overwriting
@@ -29,7 +34,9 @@ def DinoBoQ():
 
 
 def EigenPlaces():
-    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
+        io.StringIO()
+    ):
         model = torch.hub.load(
             "gmberton/eigenplaces",
             "get_trained_model",

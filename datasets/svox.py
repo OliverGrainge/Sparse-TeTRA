@@ -80,7 +80,7 @@ class SVOX(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"SVOX_{self.condition}_{self.which_set}"
+        return f"SVOX-{self.condition}"
 
 
 class SVOXNight(SVOX):

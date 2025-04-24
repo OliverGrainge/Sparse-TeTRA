@@ -49,4 +49,4 @@ class AmsterTime(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"AmsterTime_{self.which_set}"
+        return f"AmsterTime"

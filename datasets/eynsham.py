@@ -47,4 +47,4 @@ class Eynsham(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"Eynsham_{self.which_set}"
+        return f"Eynsham"

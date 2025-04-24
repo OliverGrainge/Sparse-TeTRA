@@ -103,4 +103,4 @@ class Pitts250k(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"Pittsburgh250k_{self.which_set}"
+        return f"Pitts250k"

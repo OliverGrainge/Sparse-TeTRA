@@ -1,56 +1,49 @@
 import argparse
 import importlib
+import os
+from pathlib import Path
+from typing import Type, Union
 
 import pytorch_lightning as pl
+import torch
+import torch.nn as nn
 
 from evaluation import EvaluateModule
 from model import *
-from model import BoQModel
-from utils import load_config, load_lightning2model_checkpoint
-import importlib
+from trainer import VPRTrainer
+from utils import (import_model_cls, load_config,
+                   load_lightning2model_checkpoint, parse_args)
 
-torch.set_float32_matmul_precision('high')
+# Constants
+torch.set_float32_matmul_precision("high")
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, required=True)
-    return parser.parse_args()
 
-def import_model_cls(baseline_name):
-    """Case-insensitive search for function across candidate modules."""
-    candidate_modules = ["model.baselines", "model.models"]
-    
-    for module_name in candidate_modules:
-        module = importlib.import_module(module_name)
-        for attr in dir(module):
-            if attr.lower() == baseline_name.lower():
-                return getattr(module, attr)
-    
-    raise ImportError(
-        f"Function '{baseline_name}' not found in any of {candidate_modules} (case-insensitive)"
-    )
+def freeze(model: nn.Module):
+    for param in model.parameters():
+        param.requires_grad = False
 
-def main():
+
+def main() -> None:
+    """Main function to run model evaluation."""
     args = parse_args()
     config = load_config(args.config)
 
-    if "baseline" in config.keys():
+    if "baseline" in config:
         baseline_name = config["baseline"]["baseline_name"]
         model = import_model_cls(baseline_name)()
     else:
-        model_cls = import_model_cls(baseline_name)
-        model = model_cls(**config["model"])
-        model = load_lightning2model_checkpoint(
-            model, config["model"]["checkpoint_path"]
+        assert os.path.exists(
+            config["model"]["checkpoint_path"]
+        ), f"Checkpoint path {config['model']['checkpoint_path']} does not exist"
+        model_module = VPRTrainer.load_from_checkpoint(
+            config["model"]["checkpoint_path"]
         )
+        model = model_module.model
+        freeze(model)
 
     module = EvaluateModule(
         model=model,
-        dataset_names=config["eval_module"]["val_datasets"],
-        image_size=config["eval_module"]["image_size"],
-        batch_size=config["eval_module"]["batch_size"],
-        num_workers=config["eval_module"]["num_workers"],
-        val_dataset_dir=config["eval_module"]["val_dataset_dir"],
+        **config["eval_module"]
     )
 
     trainer = pl.Trainer(

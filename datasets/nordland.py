@@ -48,4 +48,4 @@ class NordlandDataset(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"Nordland_{self.which_set}"
+        return f"Nordland"
