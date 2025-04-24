@@ -18,3 +18,4 @@ checkpoints/*
 lightning_logs/*
 datasets/image_paths/*
 *.npy
+cache/*
