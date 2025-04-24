@@ -24,6 +24,9 @@ model:
 
 model_module: 
   data_dir: /home/oliver/datasets_drive/vpr_datasets/sf_xl/raw/panoramas
+  val_dataset_dir: /home/oliver/datasets_drive/vpr_datasets
+  val_datasets: ["pitts30k"]
+  image_size: 224
   M: 15
   N: 3
   focal_dist: 10

@@ -16,3 +16,5 @@ checkpoints/*
 *.pyw
 *.pyz
 lightning_logs/*
+datasets/image_paths/*
+*.npy

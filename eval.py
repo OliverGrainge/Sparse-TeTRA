@@ -1,61 +1,56 @@
 import argparse
-import os
+import importlib
 
 import pytorch_lightning as pl
-import torch
-import torch.nn as nn
-import yaml
-from model import *
 
-from baselines import ALL_BASELINES, IMAGE_SIZES
 from evaluation import EvaluateModule
+from model import *
 from model import BoQModel
+from utils import load_config, load_lightning2model_checkpoint
+import importlib
 
+torch.set_float32_matmul_precision('high')
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--baseline",
-        type=str,
-        required=False,
-        choices=["eigenplaces", "boq", "cosplace"],
-        default="",
-    )
-    parser.add_argument("--config", type=str, required=False)
-    parser.add_argument("--checkpoint", type=str, required=False)
-    parser.add_argument(
-        "--test_datasets", type=str, required=False, nargs="+", default=["pitts30k"]
-    )
-    parser.add_argument("--batch_size", type=int, required=False, default=128)
-    parser.add_argument("--num_workers", type=int, required=False, default=16)
-    parser.add_argument("--val_dataset_dir", type=str, required=False, default="/home/oliver/datasets_drive/vpr_datasets")
+    parser.add_argument("--config", type=str, required=True)
     return parser.parse_args()
 
-
-def load_state_dict(model: nn.Module, checkpoint_path: str):
-    assert os.path.exists(checkpoint_path), f"Checkpoint {checkpoint_path} not found"
-    sd = torch.load(checkpoint_path, map_location="cpu")
-    model.load_state_dict(sd, strict=False)
-    return model
-
+def import_model_cls(baseline_name):
+    """Case-insensitive search for function across candidate modules."""
+    candidate_modules = ["model.baselines", "model.models"]
+    
+    for module_name in candidate_modules:
+        module = importlib.import_module(module_name)
+        for attr in dir(module):
+            if attr.lower() == baseline_name.lower():
+                return getattr(module, attr)
+    
+    raise ImportError(
+        f"Function '{baseline_name}' not found in any of {candidate_modules} (case-insensitive)"
+    )
 
 def main():
     args = parse_args()
-    if len(args.baseline) > 0:
-        assert (
-            args.baseline in [k.lower() for k in ALL_BASELINES.keys()]
-        ), f"Baseline {args.baseline} not found, must choose from {[k.lower() for k in ALL_BASELINES.keys()]}"
-        model = ALL_BASELINES[args.baseline]()
-        image_size = IMAGE_SIZES[args.baseline]
+    config = load_config(args.config)
+
+    if "baseline" in config.keys():
+        baseline_name = config["baseline"]["baseline_name"]
+        model = import_model_cls(baseline_name)()
     else:
-        with open(args.config, "r") as f:
-            config = yaml.safe_load(f)
-        model = BoQModel(**config["model"])
-        image_size = config["image_size"]
-        model = load_state_dict(model, args.checkpoint)
+        model_cls = import_model_cls(baseline_name)
+        model = model_cls(**config["model"])
+        model = load_lightning2model_checkpoint(
+            model, config["model"]["checkpoint_path"]
+        )
 
     module = EvaluateModule(
-        model=model, dataset_names=args.test_datasets, image_size=image_size, batch_size=args.batch_size, num_workers=args.num_workers, val_dataset_dir=args.val_dataset_dir
+        model=model,
+        dataset_names=config["eval_module"]["val_datasets"],
+        image_size=config["eval_module"]["image_size"],
+        batch_size=config["eval_module"]["batch_size"],
+        num_workers=config["eval_module"]["num_workers"],
+        val_dataset_dir=config["eval_module"]["val_dataset_dir"],
     )
 
     trainer = pl.Trainer(

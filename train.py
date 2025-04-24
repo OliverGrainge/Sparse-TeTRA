@@ -24,7 +24,7 @@ def main():
     model = BoQModel(**config["model"])
     model_module = EigenPlacesTrainer(model=model, **config["model_module"])
 
-    wandb_logger = WandbLogger(project="eigenplaces")
+    wandb_logger = WandbLogger(project="eigenplaces", dir="logs")
 
     checkpoint_callback = ModelCheckpoint(
         dirpath="checkpoints",

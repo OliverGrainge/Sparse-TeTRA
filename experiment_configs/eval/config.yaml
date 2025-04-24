@@ -1,0 +1,35 @@
+
+model: 
+  checkpoint_path: ""
+  model_name: "BoQModel"
+  image_size: 224
+  patch_size: 16
+  dim: 768
+  depth: 12
+  heads: 12
+  mlp_dim: 3072
+  in_channels: 3
+  dim_head: 64
+  dropout: 0.0
+  emb_dropout: 0
+  embedding_norm: LayerNorm
+  embedding_linear: Linear
+  attention_linear_layer: Linear
+  attention_norm_layer: LayerNorm
+  feedforward_linear_layer: Linear
+  feedforward_norm_layer: LayerNorm
+  feedforward_activation_layer: GELU
+
+  # BoQModel Params
+  proj_channels: 512
+  num_queries: 32
+  num_layers: 2
+  row_dim: 32
+
+eval_module: 
+  val_dataset_dir: /home/oliver/datasets_drive/vpr_datasets
+  val_datasets:
+    - pitts30k
+  image_size: 224
+  batch_size: 128
+  num_workers: 16

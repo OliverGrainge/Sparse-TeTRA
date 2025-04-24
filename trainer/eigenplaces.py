@@ -9,9 +9,7 @@ from pytorch_lightning.utilities.combined_loader import CombinedLoader
 from tabulate import tabulate
 from torch.nn import Parameter
 
-from ..datasets import ALL_DATASETS
 from .datasets import EigenPlacesDataset
-from .util import recall_at_k
 
 
 def move_to_device(optimizer: Type[torch.optim.Optimizer], device: str):
