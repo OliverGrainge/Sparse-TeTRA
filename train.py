@@ -18,13 +18,13 @@ def main():
     config = load_config(args.config)
     config_name = os.path.basename(args.config).split(".")[0]
     model_module = VPRTrainer(**config["model"])
-    wandb_logger = WandbLogger(project="eigenplaces", dir="logs")
+    wandb_logger = WandbLogger(project="Sparse-TeTRA", dir="logs")
 
     checkpoint_callback = ModelCheckpoint(
         dirpath="checkpoints",
-        filename=f"{config_name}-" + "{epoch}-{lateral_loss:.2f}-{frontal_loss:.2f}",
-        monitor="lateral_loss",
-        mode="min",
+        filename=f"{config_name}-" + "{epoch}-{val_recall@1:.2f}",
+        monitor="val_recall@1",
+        mode="max",
         save_top_k=3,
     )
 

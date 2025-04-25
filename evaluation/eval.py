@@ -8,11 +8,10 @@ import torchvision.transforms as T
 from PIL import Image
 from tabulate import tabulate
 from torch.utils.data import DataLoader
+
+from datasets import ALL_DATASETS
 from evaluation.matching import match_cosine
 from utils import pair
-from datasets import ALL_DATASETS
-
-
 
 
 class EvaluateModule(pl.LightningModule):
@@ -33,7 +32,7 @@ class EvaluateModule(pl.LightningModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.val_dataset_dir = val_dataset_dir
-        self.match_gpu = match_gpu 
+        self.match_gpu = match_gpu
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
@@ -72,7 +71,7 @@ class EvaluateModule(pl.LightningModule):
                     batch_size=self.batch_size,
                     num_workers=self.num_workers,
                     shuffle=False,
-                    pin_memory=torch.cuda.is_available()
+                    pin_memory=torch.cuda.is_available(),
                 )
             )
         return dataloaders
@@ -109,7 +108,9 @@ class EvaluateModule(pl.LightningModule):
             descs = self.test_descriptors[dataset_name]
             gt = dataset.ground_truth
             num_references = dataset.num_references
-            recalls = match_cosine(descs, num_references, gt, k_values=[1, 5, 10], use_gpu=self.match_gpu)
+            recalls = match_cosine(
+                descs, num_references, gt, k_values=[1, 5, 10], use_gpu=self.match_gpu
+            )
             all_recalls[dataset_name] = recalls
 
         headers = ["Dataset"] + [f"R@{k}" for k in ks]

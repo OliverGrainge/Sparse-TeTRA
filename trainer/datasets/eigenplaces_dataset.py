@@ -11,8 +11,8 @@ import torchvision.transforms as tfm
 import utm
 from PIL import Image, ImageFile
 
-from .dataset_utils import read_images_paths
-from .map_utils import create_map
+import trainer.datasets.dataset_utils as dataset_utils
+from trainer.datasets.map_utils import create_map
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -67,7 +67,6 @@ class EigenPlacesDataset(torch.utils.data.Dataset):
         min_images_per_class=10,
         angle=0,
         visualize_classes=0,
-        image_size=224,
     ):
         """
         Parameters (please check our paper for a clearer explanation of the parameters).
@@ -93,7 +92,6 @@ class EigenPlacesDataset(torch.utils.data.Dataset):
         self.focal_dist = focal_dist
         self.current_group = current_group
         self.dataset_folder = dataset_folder
-        self.image_size = image_size
 
         filename = f"cache/sfxl_M{M}_N{N}_mipc{min_images_per_class}.torch"
         if not os.path.exists(filename):
@@ -181,14 +179,12 @@ class EigenPlacesDataset(torch.utils.data.Dataset):
 
             images_paths = self.images_per_class[random_class_id]
             for path in images_paths:
-                crop = self.get_crop(
-                    self.dataset_folder + "/" + path, focal_point, self.image_size
-                )
+                crop = self.get_crop(self.dataset_folder + "/" + path, focal_point)
                 crop = tfm.functional.to_pil_image(crop)
                 crop.save(f"{folder}/{os.path.basename(path)}")
 
     @staticmethod
-    def get_crop(pano_path, focal_point, image_size):
+    def get_crop(pano_path, focal_point):
         obs_point = pano_path.split("@")[1:3]
         angle = -get_angle(focal_point, obs_point) % 360
         crop_offset = int((angle / 360 * PANO_WIDTH) % PANO_WIDTH)
@@ -205,8 +201,6 @@ class EigenPlacesDataset(torch.utils.data.Dataset):
             pil_crop = Image.new("RGB", (512, 512))
             pil_crop.paste(crop1, (0, 0))
             pil_crop.paste(crop2, (crop1.size[0], 0))
-
-        pil_crop = pil_crop.resize((image_size, image_size))
         crop = tfm.functional.to_tensor(pil_crop)
 
         return crop
@@ -219,7 +213,7 @@ class EigenPlacesDataset(torch.utils.data.Dataset):
         pano_path = (
             self.dataset_folder + "/" + random.choice(self.images_per_class[class_id])
         )
-        crop = self.get_crop(pano_path, focal_point, self.image_size)
+        crop = self.get_crop(pano_path, focal_point)
         return crop, class_num, pano_path
 
     def get_images_num(self):
@@ -234,7 +228,7 @@ class EigenPlacesDataset(torch.utils.data.Dataset):
     def initialize(dataset_folder, M, N, min_images_per_class, filename):
         logging.debug(f"Searching training images in {dataset_folder}")
 
-        images_paths = read_images_paths(dataset_folder)
+        images_paths = dataset_utils.read_images_paths(dataset_folder)
         logging.debug(f"Found {len(images_paths)} images")
 
         logging.debug("For each image, get its UTM east, UTM north from its path")

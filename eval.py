@@ -36,15 +36,12 @@ def main() -> None:
             config["model"]["checkpoint_path"]
         ), f"Checkpoint path {config['model']['checkpoint_path']} does not exist"
         model_module = VPRTrainer.load_from_checkpoint(
-            config["model"]["checkpoint_path"]
+            config["model"]["checkpoint_path"], strict=False
         )
         model = model_module.model
         freeze(model)
 
-    module = EvaluateModule(
-        model=model,
-        **config["eval_module"]
-    )
+    module = EvaluateModule(model=model, **config["eval_module"])
 
     trainer = pl.Trainer(
         accelerator="auto",

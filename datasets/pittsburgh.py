@@ -6,12 +6,6 @@ import yaml
 from PIL import Image
 from torch.utils.data import Dataset
 
-# NOTE: you need to download the Nordland dataset from  https://surfdrive.surf.nl/files/index.php/s/sbZRXzYe3l0v67W
-# this link is shared and maintained by the authors of VPR_Bench: https://github.com/MubarizZaffar/VPR-Bench
-# the folders named ref and query should reside in DATASET_ROOT path
-# I hardcoded the image names and ground truth for faster evaluation
-# performance is exactly the same as if you use VPR-Bench.
-
 
 class Pitts30k(Dataset):
     def __init__(self, val_dataset_dir=None, input_transform=None, which_set="val"):
@@ -57,7 +51,7 @@ class Pitts30k(Dataset):
         return len(self.images)
 
     def __repr__(self):
-        return f"Pittsburgh30k_{self.which_set}"
+        return f"Pitts30k"
 
 
 class Pitts250k(Dataset):

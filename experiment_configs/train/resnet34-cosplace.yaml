@@ -1,0 +1,34 @@
+
+model: 
+  model_name: ResNet34CosPlace
+  model_init_args: 
+    out_dim: 512
+  data_dir: /home/oliver/datasets_drive/vpr_datasets/sf_xl/raw/panoramas
+  val_dataset_dir: /home/oliver/datasets_drive/vpr_datasets/sf_xl/processed/val
+  image_size: 224
+  iterations_per_epoch: 200
+  M: 15
+  N: 3
+  focal_dist: 10
+  min_images_per_class: 5
+  visualize_classes: 0
+  groups_num: 9 # N * N
+  batch_size: 128
+  num_workers: 8
+  fc_output_dim: 512
+  s: 100
+  m: 0.4
+  classifiers_lr: 0.01
+  model_lr: 0.00001
+  lambda_lat: 1.0
+  lambda_front: 1.0
+  
+trainer: 
+  max_epochs: 1000
+  accelerator: auto
+  precision: 32
+  reload_dataloaders_every_n_epochs: 1
+  num_sanity_val_steps: 0
+  check_val_every_n_epoch: 1
+  limit_train_batches: 500
+
