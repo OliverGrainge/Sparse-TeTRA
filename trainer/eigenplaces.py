@@ -131,6 +131,13 @@ class VPRTrainer(pl.LightningModule):
             ]
         )
 
+        self.val_augmentation = tfm.Compose(
+            [
+                tfm.Resize((self.hparams.image_size, self.hparams.image_size)),
+                tfm.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
+
     def on_train_epoch_start(self):
         # select current group pair
         idx = (self.current_epoch % self.hparams.groups_num) * 2
@@ -234,6 +241,7 @@ class VPRTrainer(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         images, indices = batch
+        images = self.val_augmentation(images)
         descriptors = self(images)  # forward pass
         descriptors = descriptors.detach().cpu()  # detach & move to CPU
         output = {"indices": indices, "descriptors": descriptors}

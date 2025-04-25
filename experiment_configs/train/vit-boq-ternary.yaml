@@ -28,14 +28,14 @@ model:
   data_dir: /home/oliver/datasets_drive/vpr_datasets/sf_xl/raw/panoramas
   val_dataset_dir: /home/oliver/datasets_drive/vpr_datasets/sf_xl/processed/val
   image_size: 224
-  iterations_per_epoch: 250
+  iterations_per_epoch: 200
   M: 15
   N: 3
   focal_dist: 10
   min_images_per_class: 5
   visualize_classes: 0
   groups_num: 9 # N * N
-  batch_size: 64
+  batch_size: 128
   num_workers: 8
   fc_output_dim: 16384
   s: 100
