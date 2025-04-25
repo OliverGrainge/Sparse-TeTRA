@@ -224,6 +224,61 @@ class BoQModel(nn.Module):
         return x
 
 
+
+
+
+class ViTCLSModel(nn.Module):
+    def __init__(
+        self,
+        image_size: Union[int, Tuple[int, int]] = 224,
+        patch_size: Union[int, Tuple[int, int]] = 16,
+        dim: int = 768,
+        depth: int = 12,
+        heads: int = 12,
+        mlp_dim: int = 3072,
+        in_channels: int = 3,
+        dim_head: int = 64,
+        dropout: float = 0.0,
+        emb_dropout: float = 0,
+        embedding_norm: str = "LayerNorm",
+        embedding_linear: str = "Linear",
+        attention_linear_layer: str = "Linear",
+        attention_norm_layer: str = "LayerNorm",
+        feedforward_linear_layer: str = "Linear",
+        feedforward_norm_layer: str = "LayerNorm",
+        feedforward_activation_layer: str = "GELU",
+    ):
+        super().__init__()
+
+        self.vit = ViT(
+            image_size=image_size,
+            patch_size=patch_size,
+            dim=dim,
+            depth=depth,
+            heads=heads,
+            mlp_dim=mlp_dim,
+            in_channels=in_channels,
+            dim_head=dim_head,
+            dropout=dropout,
+            emb_dropout=emb_dropout,
+            embedding_norm=embedding_norm,
+            embedding_linear=embedding_linear,
+            attention_linear_layer=attention_linear_layer,
+            attention_norm_layer=attention_norm_layer,
+            feedforward_linear_layer=feedforward_linear_layer,
+            feedforward_norm_layer=feedforward_norm_layer,
+            feedforward_activation_layer=feedforward_activation_layer,
+        )
+        self.dim = dim
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.vit(x)
+        return x[:, 0, :].view(-1, self.dim)
+
+
+
+
+
 class ResNet(nn.Module):
     def __init__(
         self,

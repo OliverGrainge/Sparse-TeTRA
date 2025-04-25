@@ -1,13 +1,13 @@
 
 model: 
-  model_name: BoQModel
+  model_name: ViTCLSModel
   model_init_args: 
     image_size: 224
-    patch_size: 16
-    dim: 768
-    depth: 12
-    heads: 12
-    mlp_dim: 3072
+    patch_size: 32
+    dim: 384
+    depth: 6
+    heads: 6
+    mlp_dim: 1536
     in_channels: 3
     dim_head: 64
     dropout: 0.0
@@ -19,25 +19,21 @@ model:
     feedforward_linear_layer: Linear
     feedforward_norm_layer: LayerNorm
     feedforward_activation_layer: GELU
-    proj_channels: 512
-    num_queries: 32
-    num_layers: 2
-    row_dim: 32
 
   # training parameters
   data_dir: /home/oliver/datasets_drive/vpr_datasets/sf_xl/raw/panoramas
   val_dataset_dir: /home/oliver/datasets_drive/vpr_datasets/sf_xl/processed/val
   image_size: 224
-  iterations_per_epoch: 1000
+  iterations_per_epoch: 10
   M: 15
   N: 3
   focal_dist: 10
   min_images_per_class: 5
   visualize_classes: 0
   groups_num: 9 # N * N
-  batch_size: 48
+  batch_size: 32
   num_workers: 8
-  fc_output_dim: 16384
+  fc_output_dim: 384
   s: 100
   m: 0.4
   classifiers_lr: 0.01

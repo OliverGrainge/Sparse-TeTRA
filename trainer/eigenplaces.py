@@ -239,6 +239,7 @@ class VPRTrainer(pl.LightningModule):
     def on_validation_epoch_start(self):
         self.validation_outputs = []
 
+    @torch.no_grad()
     def validation_step(self, batch, batch_idx):
         images, indices = batch
         images = self.val_augmentation(images)
@@ -296,3 +297,13 @@ class VPRTrainer(pl.LightningModule):
         # Log the main recall metric
         for i, k in enumerate(RECALL_VALUES):
             self.log(f"val_recall@{k}", recalls[i], prog_bar=False)
+
+        del self.validation_outputs
+        del all_descriptors, db_descriptors, query_descriptors, index, predictions, recalls
+        
+        if isinstance(index, faiss.Index):          # release FAISS GPU buffers
+             index.reset()                           # drops vectors
+             del index
+ 
+        torch.cuda.empty_cache()                    # flush caching allocator 
+        torch.cuda.ipc_collect()  
