@@ -5,13 +5,12 @@ import torch
 from lightning.pytorch.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from dataloader.train import PretrainDataModule
+from dataloader.train import PostTrainDataModule
 from model import ViT
-from trainer import PreTrainerModule
-from utils import load_config
+from trainer import PostTrainerModule
+from utils import load_config, load_pretrain_checkpoint2model
 
 torch.set_float32_matmul_precision("high")
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -22,20 +21,21 @@ def parse_args():
 def main():
     args = parse_args()
     config = load_config(args.config)
-    wandb_logger = WandbLogger(project="logs/Sparse-TeTRA-pretrain")
-    filename = f"vit_L[{config['model']['feedforward_linear_layer']}]_D[{config['model']['dim']}]"
+    wandb_logger = WandbLogger(project="Sparse-TeTRA-posttrain")
+    filename = f"vit"
+
     checkpoint_callback = ModelCheckpoint(
-        dirpath=f"checkpoints/pretrain/{filename}",
-        monitor="val_loss",
+        dirpath=f"checkpoints/posttrain/",
+        monitor="val_recall",
         mode="min",
         save_top_k=1,
         save_last=True,
-        filename="{epoch}-{val_loss:.4f}",
+        filename="{epoch}-{val_recall:.4f}",
     )
 
-    data_module = PretrainDataModule(**config["pretrain"]["data"])
-    model_module = PreTrainerModule(**config["pretrain"]["module"])
-    trainer = pl.Trainer(**config["trainer"], logger=wandb_logger)
+    data_module = PostTrainDataModule(**config["posttrain"]["data"])
+    model_module = PostTrainerModule(**config["posttrain"]["module"])
+    trainer = pl.Trainer(**config["posttrain"]["trainer"], logger=wandb_logger)
     trainer.fit(model_module, data_module)
 
 

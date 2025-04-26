@@ -76,8 +76,8 @@ class Transformer(nn.Module):
 class ViT(nn.Module):
     def __init__(
         self,
-        image_size: Union[int, Tuple[int, int]] = 224,
-        patch_size: Union[int, Tuple[int, int]] = 16,
+        image_size: int = 224,
+        patch_size: int = 16,
         dim: int = 768,
         depth: int = 12,
         heads: int = 12,

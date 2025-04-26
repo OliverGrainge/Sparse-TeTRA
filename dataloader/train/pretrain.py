@@ -48,17 +48,17 @@ def filter_panorama_images(img: Image.Image) -> Image.Image:
 class PretrainDataset(Dataset):
     def __init__(
         self,
-        data_dir: str,
+        train_data_dir: str,
         student_transform: T.Compose,
         teacher_transform: T.Compose,
         split: str = "train",
     ):
         super().__init__()
-        self.data_dir = data_dir
+        self.train_data_dir = train_data_dir
         self.student_transform = student_transform
         self.teacher_transform = teacher_transform
         self.split = split
-        self.img_paths = self._data_split(search_paths(data_dir), split)
+        self.img_paths = self._data_split(search_paths(train_data_dir), split)
         assert self.split in ["train", "val"], "split must be either 'train' or 'val'"
         self._print_stats()
 
@@ -66,7 +66,7 @@ class PretrainDataset(Dataset):
     def _print_stats(self):
         print("\n" + "="*50)
         print(f"Dataset Summary:")
-        print(f"Root Directory: {self.data_dir}")
+        print(f"Root Directory: {self.train_data_dir}")
         print(f"Split: {self.split}")
         print(f"Number of Images: {len(self.img_paths)}")
         print("="*50 + "\n")
@@ -96,14 +96,14 @@ class PretrainDataset(Dataset):
 class PretrainDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        data_dir: str,
+        train_data_dir: str,
         img_size: int,
         batch_size: int,
         num_workers: int,
         pin_memory: bool,
     ):
         super().__init__()
-        self.data_dir = data_dir
+        self.train_data_dir = train_data_dir
         self.img_size = img_size
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -115,13 +115,13 @@ class PretrainDataModule(pl.LightningDataModule):
     def setup(self, stage: str):
         if stage == "fit":
             self.train_dataset = PretrainDataset(
-                self.data_dir,
+                self.train_data_dir,
                 self.train_transform,
                 self.teacher_transform,
                 split="train",
             )
             self.val_dataset = PretrainDataset(
-                self.data_dir, self.val_transform, self.teacher_transform, split="val"
+                self.train_data_dir, self.val_transform, self.teacher_transform, split="val"
             )
 
     def train_dataloader(self):

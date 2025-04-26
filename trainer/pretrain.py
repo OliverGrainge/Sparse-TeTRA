@@ -8,15 +8,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms as T
 
-from model import ViT
-
+from utils import load_model
 
 def im2tokens(x):
     B, C, Hp, Wp = x.shape
     x = x.view(B, C, Hp * Wp)
     x = x.permute(0, 2, 1)
     return x
-
 
 def tokens2im(x, with_cls=False):
     if with_cls:
@@ -26,20 +24,24 @@ def tokens2im(x, with_cls=False):
     x = x.view(B, C, int(sqrt(D)), int(sqrt(D)))
     return x
 
-
 def freeze(model):
     for param in model.parameters():
         param.requires_grad = False
 
 
 class PreTrainerModule(pl.LightningModule):
-    def __init__(self, model: ViT, lr: float = 1e-4, weight_decay: float = 0.0):
+    def __init__(self, 
+            model_name: str,
+            model_init_args: dict, 
+            lr: float = 1e-4, 
+            weight_decay: float = 0.0):
         super().__init__()
-        self.model = model
+        self.model = load_model(model_name, model_init_args)
         self.lr = lr
         self.weight_decay = weight_decay
         self.projector = self._get_projector()
         self.teacher = self._get_teacher()
+
 
     def _get_projector(self):
         if self.model.dim != 768:
