@@ -21,14 +21,14 @@ class NordlandDataset(Dataset):
         self.which_set = which_set
 
         # reference images names
-        self.dbImages = np.load(f"datasets/image_paths/Nordland_dbImages.npy")
+        self.dbImages = np.load(f"dataloader/val/image_paths/Nordland_dbImages.npy")
 
         # query images names
-        self.qImages = np.load(f"datasets/image_paths/Nordland_qImages.npy")
+        self.qImages = np.load(f"dataloader/val/image_paths/Nordland_qImages.npy")
 
         # ground truth
         self.ground_truth = np.load(
-            f"datasets/image_paths/Nordland_gt.npy", allow_pickle=True
+            f"dataloader/val/image_paths/Nordland_gt.npy", allow_pickle=True
         )
 
         # reference images then query images

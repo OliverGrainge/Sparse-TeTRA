@@ -206,13 +206,14 @@ class PostTrainDataModule(pl.LightningDataModule):
                  val_set_names=['pitts30k']
                  ):
         super().__init__()
+        self.image_size = image_size
         self.train_data_dir = train_data_dir 
         self.val_data_dir = val_data_dir
         self.batch_size = batch_size
         self.img_per_place = img_per_place
         self.min_img_per_place = min_img_per_place
         self.shuffle_all = shuffle_all
-        self.image_size = image_size
+    
         self.num_workers = num_workers
         self.batch_sampler = batch_sampler
         self.cities = cities
@@ -260,7 +261,6 @@ class PostTrainDataModule(pl.LightningDataModule):
     def setup(self, stage):
         if stage == 'fit':
             self.reload()
-            """
             self.val_datasets = []
             for dataset_name in self.val_set_names:
                 assert (
@@ -275,7 +275,6 @@ class PostTrainDataModule(pl.LightningDataModule):
                 )
                 for dataset_name in self.val_set_names
             ]
-            """
 
     def reload(self):
         self.train_dataset = GSVCitiesDataset(
@@ -289,7 +288,7 @@ class PostTrainDataModule(pl.LightningDataModule):
     def train_dataloader(self):
         self.reload()
         return DataLoader(dataset=self.train_dataset, **self.train_loader_config)
-    """
+
     def val_dataloader(self): 
         dataloaders = []
         for dataset in self.val_datasets:
@@ -300,7 +299,7 @@ class PostTrainDataModule(pl.LightningDataModule):
                 )
             )
         return dataloaders
-    """
+
 
     
    

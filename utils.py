@@ -4,6 +4,7 @@ import os
 import torch 
 import yaml
 from model import * 
+from model.aggregation import * 
 
 
 def load_config(config_path: str) -> Dict[Any, Any]:
@@ -22,7 +23,11 @@ def load_posttrain_checkpoint2model(model: nn.Module, checkpoint_path: str):
         raise FileNotFoundError(f"Checkpoint file {checkpoint_path} does not exist")
     checkpoint = torch.load(checkpoint_path)
     state_dict = checkpoint["state_dict"]
-    model.load_state_dict(state_dict, strict=False)
+    new_sd = {}
+    for key, value in state_dict.items(): 
+        if "teacher" not in key and "projector" not in key: 
+            new_sd[key.replace("model.", "")] = value
+    model.load_state_dict(new_sd, strict=True)
     return model
 
 
@@ -37,3 +42,9 @@ def load_model(model_name: str, model_init_args: dict):
     model = model_module(**model_init_args)
     return model
     
+
+def load_agg_method(agg_method: str): 
+    if agg_method.lower() == 'cls': 
+        return CLS
+    else: 
+        raise ValueError(f"Aggregation method {agg_method} not found")

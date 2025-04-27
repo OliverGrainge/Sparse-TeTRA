@@ -15,9 +15,10 @@ def pair(t: Union[int, Tuple[int, int]]) -> Tuple[int, int]:
 
 def search_paths(dir: str, levels: int = 3):
     paths = []
-    for root, dirs, files in os.walk(dir):
+    for root, dirs, files in os.walk(dir, followlinks=True):
         for file in files:
-            paths.append(os.path.join(root, file))
+            if file.lower().endswith(('.jpg', '.png')):
+                paths.append(os.path.join(root, file))
     return paths
 
 

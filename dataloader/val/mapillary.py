@@ -16,10 +16,10 @@ class MSLS(Dataset):
         self.which_set = which_set
         assert which_set in ["val", "test"], "MSLS only supports val and test set"
         self.dataset_root = os.path.join(val_dataset_dir)
-        self.dbImages = np.load(f"datasets/image_paths/msls_{which_set}_dbImages.npy")
-        self.qImages = np.load(f"datasets/image_paths/msls_{which_set}_qImages.npy")
+        self.dbImages = np.load(f"dataloader/val/image_paths/msls_{which_set}_dbImages.npy")
+        self.qImages = np.load(f"dataloader/val/image_paths/msls_{which_set}_qImages.npy")
         self.ground_truth = np.load(
-            f"datasets/image_paths/msls_{which_set}_gt.npy", allow_pickle=True
+            f"dataloader/val/image_paths/msls_{which_set}_gt.npy", allow_pickle=True
         )
 
         # reference images then query images

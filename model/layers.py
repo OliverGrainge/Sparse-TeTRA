@@ -69,9 +69,9 @@ class SparseTernaryLinear(nn.Linear):
         self.sparsity = sparsity
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = sparsify(x, self.sparsity)
         dqw = quant(self.weight)
         x = F.linear(x, dqw, bias=self.bias)
-        x = sparsify(x, self.sparsity)
         return x
 
     def __repr__(self):

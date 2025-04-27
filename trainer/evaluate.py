@@ -9,30 +9,33 @@ from PIL import Image
 from tabulate import tabulate
 from torch.utils.data import DataLoader
 
-from datasets import ALL_DATASETS
+from dataloader.val import ALL_DATASETS
 from trainer.matching import match_cosine
-from utils import pair
 
+def pair(t):
+    return (
+        (t, t)
+        if isinstance(t, int)
+        else tuple(t[:2]) if isinstance(t, (list, tuple)) else (t, t)
+    )
 
 class EvaluateModule(pl.LightningModule):
     def __init__(
         self,
         model: nn.Module,
-        dataset_names: list[str],
+        val_dataset_dir: str,
+        val_set_names: list[str],
         image_size: int,
         batch_size: int,
         num_workers: int,
-        val_dataset_dir: str,
-        match_gpu: bool,
     ):
         super().__init__()
         self.model = model
-        self.dataset_names = dataset_names
+        self.val_set_names = val_set_names
         self.image_size = image_size
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.val_dataset_dir = val_dataset_dir
-        self.match_gpu = match_gpu
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
@@ -48,7 +51,7 @@ class EvaluateModule(pl.LightningModule):
 
     def setup(self, stage: str):
         if stage == "test":
-            for dataset_name in self.dataset_names:
+            for dataset_name in self.val_set_names:
                 assert (
                     dataset_name.lower() in ALL_DATASETS.keys()
                 ), f"Dataset {dataset_name} not found, must choose from {ALL_DATASETS.keys()}"
@@ -59,7 +62,7 @@ class EvaluateModule(pl.LightningModule):
                     input_transform=self._transform(),
                     which_set="test",
                 )
-                for dataset_name in self.dataset_names
+                for dataset_name in self.val_set_names
             ]
 
     def test_dataloader(self):
@@ -109,7 +112,7 @@ class EvaluateModule(pl.LightningModule):
             gt = dataset.ground_truth
             num_references = dataset.num_references
             recalls = match_cosine(
-                descs, num_references, gt, k_values=[1, 5, 10], use_gpu=self.match_gpu
+                descs, num_references, gt, k_values=[1, 5, 10]
             )
             all_recalls[dataset_name] = recalls
 

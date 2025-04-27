@@ -18,17 +18,17 @@ class AmsterTime(Dataset):
         assert which_set == "test", "Tokyo247 only supports test set"
         # reference images names
         self.dbImages = np.load(
-            f"datasets/image_paths/amstertime_{which_set}_dbImages.npy"
+            f"dataloader/val/image_paths/amstertime_{which_set}_dbImages.npy"
         )
 
         # query images names
         self.qImages = np.load(
-            f"datasets/image_paths/amstertime_{which_set}_qImages.npy"
+            f"dataloader/val/image_paths/amstertime_{which_set}_qImages.npy"
         )
 
         # ground truth
         self.ground_truth = np.load(
-            f"datasets/image_paths/amstertime_{which_set}_gt.npy", allow_pickle=True
+            f"dataloader/val/image_paths/amstertime_{which_set}_gt.npy", allow_pickle=True
         )
         # reference images then query images
         self.images = np.concatenate((self.dbImages, self.qImages))

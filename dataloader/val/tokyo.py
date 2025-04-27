@@ -14,14 +14,14 @@ class Tokyo247(Dataset):
         self.which_set = which_set
         assert which_set == "test", "Tokyo247 only supports test set"
         # reference images names
-        self.dbImages = np.load("datasets/image_paths/tokyo247_dbImages.npy")
+        self.dbImages = np.load("dataloader/val/image_paths/tokyo247_dbImages.npy")
 
         # query images names
-        self.qImages = np.load("datasets/image_paths/tokyo247_qImages.npy")
+        self.qImages = np.load("dataloader/val/image_paths/tokyo247_qImages.npy")
 
         # ground truth
         self.ground_truth = np.load(
-            "datasets/image_paths/tokyo247_gt.npy", allow_pickle=True
+            "dataloader/val/image_paths/tokyo247_gt.npy", allow_pickle=True
         )
 
         # reference images then query images

@@ -18,19 +18,19 @@ class Pitts30k(Dataset):
 
         # reference images names
         self.dbImages = np.load(
-            f"datasets/image_paths/pitts30k_{which_set}_dbImages.npy",
+            f"dataloader/val/image_paths/pitts30k_{which_set}_dbImages.npy",
             allow_pickle=True,
         )
 
         # query images names
         self.qImages = np.load(
-            f"datasets/image_paths/pitts30k_{which_set}_qImages.npy",
+            f"dataloader/val/image_paths/pitts30k_{which_set}_qImages.npy",
             allow_pickle=True,
         )
 
         # ground truth
         self.ground_truth = np.load(
-            f"datasets/image_paths/pitts30k_{which_set}_gt.npy",
+            f"dataloader/val/image_paths/pitts30k_{which_set}_gt.npy",
             allow_pickle=True,
         )
 
@@ -65,7 +65,7 @@ class Pitts250k(Dataset):
 
         # reference images names
         self.dbImages = np.load(
-            f"image_paths/Pittsburgh/pitts30k_{which_set}_dbImages.npy",
+            f"/image_paths/Pittsburgh/pitts30k_{which_set}_dbImages.npy",
             allow_pickle=True,
         )
 

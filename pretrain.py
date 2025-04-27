@@ -16,26 +16,30 @@ torch.set_float32_matmul_precision("high")
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str)
+    parser.add_argument("--noob", default=True)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     config = load_config(args.config)
-    wandb_logger = WandbLogger(project="logs/Sparse-TeTRA-pretrain")
-    filename = f"vit_L[{config['model']['feedforward_linear_layer']}]_D[{config['model']['dim']}]"
+    wandb_logger = WandbLogger(project="Sparse-TeTRA-pretrain")
+    model_name = config["pretrain"]["module"]["model_name"]
+    config_basename = args.config.split("/")[-1].split(".")[0]
     checkpoint_callback = ModelCheckpoint(
-        dirpath=f"checkpoints/pretrain/{filename}",
-        monitor="val_loss",
+        dirpath=f"checkpoints/pretrain/{model_name}",
+        monitor="train_loss",
         mode="min",
         save_top_k=1,
         save_last=True,
-        filename="{epoch}-{val_loss:.4f}",
+        filename=config_basename + "_{epoch}-{train_loss:.4f}",
+        every_n_train_steps=2000,
     )
 
     data_module = PretrainDataModule(**config["pretrain"]["data"])
     model_module = PreTrainerModule(**config["pretrain"]["module"])
-    trainer = pl.Trainer(**config["trainer"], logger=wandb_logger)
+    print(model_module.model)
+    trainer = pl.Trainer(**config["pretrain"]["trainer"], logger=wandb_logger, callbacks=[checkpoint_callback])
     trainer.fit(model_module, data_module)
 
 

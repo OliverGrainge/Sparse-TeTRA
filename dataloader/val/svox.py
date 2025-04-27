@@ -36,29 +36,29 @@ class SVOX(Dataset):
 
         if condition is None:
             self.dbImages = np.load(
-                f"datasets/image_paths/svox_{which_set}_dbImages.npy"
+                f"dataloader/val/image_paths/svox_{which_set}_dbImages.npy"
             )
         else:
             self.dbImages = np.load(
-                f"datasets/image_paths/svox_{condition}_{which_set}_dbImages.npy"
+                f"dataloader/val/image_paths/svox_{condition}_{which_set}_dbImages.npy"
             )
 
         # query images names
         if condition is None:
-            self.qImages = np.load(f"datasets/image_paths/svox_{which_set}_qImages.npy")
+            self.qImages = np.load(f"dataloader/val/image_paths/svox_{which_set}_qImages.npy")
         else:
             self.qImages = np.load(
-                f"datasets/image_paths/svox_{condition}_{which_set}_qImages.npy"
+                f"dataloader/val/image_paths/svox_{condition}_{which_set}_qImages.npy"
             )
 
         # ground truth
         if condition is None:
             self.ground_truth = np.load(
-                f"datasets/image_paths/svox_{which_set}_gt.npy", allow_pickle=True
+                f"dataloader/val/image_paths/svox_{which_set}_gt.npy", allow_pickle=True
             )
         else:
             self.ground_truth = np.load(
-                f"datasets/image_paths/svox_{condition}_{which_set}_gt.npy",
+                f"dataloader/val/image_paths/svox_{condition}_{which_set}_gt.npy",
                 allow_pickle=True,
             )
         # reference images then query images

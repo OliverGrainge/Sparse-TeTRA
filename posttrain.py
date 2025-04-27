@@ -22,20 +22,20 @@ def main():
     args = parse_args()
     config = load_config(args.config)
     wandb_logger = WandbLogger(project="Sparse-TeTRA-posttrain")
-    filename = f"vit"
-
+    model_name = config["posttrain"]["module"]["model_name"]
+    config_basename = args.config.split("/")[-1].split(".")[0]
     checkpoint_callback = ModelCheckpoint(
-        dirpath=f"checkpoints/posttrain/",
+        dirpath=f"checkpoints/posttrain/{model_name}",
         monitor="val_recall",
         mode="min",
         save_top_k=1,
         save_last=True,
-        filename="{epoch}-{val_recall:.4f}",
+        filename=config_basename + "_{epoch}-{val_recall:.4f}",
     )
 
     data_module = PostTrainDataModule(**config["posttrain"]["data"])
     model_module = PostTrainerModule(**config["posttrain"]["module"])
-    trainer = pl.Trainer(**config["posttrain"]["trainer"], logger=wandb_logger)
+    trainer = pl.Trainer(**config["posttrain"]["trainer"], logger=wandb_logger, callbacks=[checkpoint_callback])
     trainer.fit(model_module, data_module)
 
 

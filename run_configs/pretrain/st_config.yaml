@@ -15,9 +15,9 @@ pretrain:
       emb_dropout: 0.1
       embedding_norm: "LayerNorm"
       embedding_linear: "Linear"
-      attention_linear_layer: "Linear"
+      attention_linear_layer: "SparseTernaryLinear"
       attention_norm_layer: "LayerNorm"
-      feedforward_linear_layer: "Linear"
+      feedforward_linear_layer: "SparseTernaryLinear"
       feedforward_norm_layer: "LayerNorm"
       feedforward_activation_layer: "GELU"
     
