@@ -26,7 +26,7 @@ def main():
     wandb_logger = WandbLogger(project="Sparse-TeTRA-pretrain")
     config_basename = args.config.split("/")[-1].split(".")[0]
     checkpoint_callback = ModelCheckpoint(
-        dirpath=f"checkpoints/pretrain/{config_basename}",
+        dirpath=f"checkpoints/pretrain/",
         monitor="train_loss",
         mode="min",
         save_top_k=1,

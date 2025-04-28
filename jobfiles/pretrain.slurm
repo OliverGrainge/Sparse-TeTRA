@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name=t_config    # Job name
-#SBATCH --partition=swarm_h100
+#SBATCH --job-name=pretrain    # Job name
+#SBATCH --partition=swarm_a100
 #SBATCH --nodes=1                  # Run on one node
 #SBATCH --cpus-per-task=8         # Number of CPU cores per task (matching num_workers)
 #SBATCH --time=72:00:00           # Time limit hrs:min:sec
@@ -14,4 +14,4 @@
 export WANDB_MODE=offline
 
 # Run the training script
-srun python pretrain.py --config run_configs/pretrain/t_config.yaml
+srun python pretrain.py --config run_configs/pretrain/pretrain.yaml

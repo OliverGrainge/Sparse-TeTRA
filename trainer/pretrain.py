@@ -31,9 +31,6 @@ def freeze(model):
     for param in model.parameters():
         param.requires_grad = False
 
-    
-
-
 
 class PreTrainerModule(pl.LightningModule):
     def __init__(self, 
@@ -77,7 +74,7 @@ class PreTrainerModule(pl.LightningModule):
         self.sparstiy_max = 0.1 + range * train_progress
 
     def _sample_sparstiy(self):
-        return random.uniform(self.sparsity_min, self.sparsity_max) 
+        return random.uniform(self.sparsity_min, self.sparstiy_max) 
     
     def training_step(self, batch, batch_idx):
         s_img, t_img = batch
@@ -91,7 +88,7 @@ class PreTrainerModule(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         s_img, t_img = batch
         T_features = im2tokens(self.teacher.backbone(t_img))
-        S_features = self.projector(self(s_img))
+        S_features = self.projector(self(s_img, 0.0))
         loss = self._feature_loss(T_features, S_features)
         self.log("val_loss", loss)
 
