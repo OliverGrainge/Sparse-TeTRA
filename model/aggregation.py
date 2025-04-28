@@ -8,18 +8,21 @@ from math import sqrt
 
 def im2tokens(x):
     B, C, Hp, Wp = x.shape
-    x = x.view(B, C, Hp * Wp)
+    x = x.reshape(B, C, Hp * Wp)
     x = x.permute(0, 2, 1)
     return x
 
 def tokens2im(x, with_cls=False):
     if with_cls:
-        x = x[:, 1:, :]
-    B, D, C = x.shape
+        x = x[:, 1:, :]  # Remove CLS token
+    B, N, C = x.shape
+    H = W = int(math.sqrt(N))  # Calculate height and width
+    if H * W != N:
+        raise ValueError(f"Number of tokens {N} must be a perfect square")
     x = x.permute(0, 2, 1)
-    x = x.view(B, C, int(sqrt(D)), int(sqrt(D)))
+    x = x.contiguous()  # Make contiguous before reshape
+    x = x.reshape(B, C, H, W)
     return x
-
 # =============================== CLS =============================== 
 
 
@@ -219,7 +222,9 @@ class BoQ(torch.nn.Module):
     def forward(self, x):
         # reduce input dimension using 3x3 conv when using ResNet
         x = tokens2im(x, with_cls=True)
+        
         x = self.proj_c(x)
+
         x = x.flatten(2).permute(0, 2, 1)
         x = self.norm_input(x)
   
@@ -231,8 +236,8 @@ class BoQ(torch.nn.Module):
             attns.append(attn)
 
         out = torch.cat(outs, dim=1)
-        out = self.fc(out.permute(0, 2, 1))
-        out = out.flatten(1)
+        out = self.fc(out.permute(0, 2, 1).contiguous())
+        out = out.reshape(out.size(0), -1)
         out = torch.nn.functional.normalize(out, p=2, dim=-1)
         return out#, attns
 
@@ -324,7 +329,7 @@ class CosPlace(nn.Module):
         in_dim: number of channels of the input
         out_dim: dimension of the output descriptor 
     """
-    def __init__(self, in_dim, out_dim):
+    def __init__(self, in_dim: int=768, out_dim=2048):
         super().__init__()
         self.gem = GeM()
         self.fc = nn.Linear(in_dim, out_dim)

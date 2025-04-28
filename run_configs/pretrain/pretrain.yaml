@@ -1,0 +1,22 @@
+
+pretrain:
+  module:    
+    lr: 0.0003
+    weight_decay: 0.001
+
+  data: 
+    train_data_dir: "/Users/olivergrainge/github/Datasets/gsv-cities/Images"
+    #batch_size: 384
+    batch_size: 4
+    #num_workers: 8 
+    num_workers: 0
+    img_size: 224
+    #pin_memory: true
+    pin_memory: false
+
+  trainer:
+    enable_progress_bar: false
+    max_epochs: 6  # Reduced number of epochs
+    accelerator: "auto"
+    devices: "auto"
+    precision: 16

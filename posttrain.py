@@ -22,10 +22,9 @@ def main():
     args = parse_args()
     config = load_config(args.config)
     wandb_logger = WandbLogger(project="Sparse-TeTRA-posttrain")
-    model_name = config["posttrain"]["module"]["model_name"]
     config_basename = args.config.split("/")[-1].split(".")[0]
     checkpoint_callback = ModelCheckpoint(
-        dirpath=f"checkpoints/posttrain/{model_name}",
+        dirpath=f"checkpoints/posttrain/{config_basename}",
         monitor="val_recall",
         mode="min",
         save_top_k=1,

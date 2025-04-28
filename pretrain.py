@@ -24,10 +24,9 @@ def main():
     args = parse_args()
     config = load_config(args.config)
     wandb_logger = WandbLogger(project="Sparse-TeTRA-pretrain")
-    model_name = config["pretrain"]["module"]["model_name"]
     config_basename = args.config.split("/")[-1].split(".")[0]
     checkpoint_callback = ModelCheckpoint(
-        dirpath=f"checkpoints/pretrain/{model_name}",
+        dirpath=f"checkpoints/pretrain/{config_basename}",
         monitor="train_loss",
         mode="min",
         save_top_k=1,
@@ -38,7 +37,6 @@ def main():
 
     data_module = PretrainDataModule(**config["pretrain"]["data"])
     model_module = PreTrainerModule(**config["pretrain"]["module"])
-    print(model_module.model)
     trainer = pl.Trainer(**config["pretrain"]["trainer"], logger=wandb_logger, callbacks=[checkpoint_callback])
     trainer.fit(model_module, data_module)
 

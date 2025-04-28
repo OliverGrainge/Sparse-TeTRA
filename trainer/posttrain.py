@@ -11,7 +11,9 @@ from torch.optim import lr_scheduler
 from pytorch_metric_learning.miners import MultiSimilarityMiner
 from pytorch_metric_learning.losses import MultiSimilarityLoss
 from pytorch_metric_learning.distances import CosineSimilarity, DotProductSimilarity
-from model.aggregation import BoQ, CLS, CosPlace, SALAD
+from model.aggregation import BoQ, CLS, CosPlace, SALAD, MixVPR
+from model.models import SparseTernaryViT
+import random 
 
 from trainer.matching import match_cosine
 from tabulate import tabulate
@@ -23,7 +25,7 @@ from model.models import ViT
 
 def im2tokens(x):
     B, C, Hp, Wp = x.shape
-    x = x.view(B, C, Hp * Wp)
+    x = x.reshape(B, C, Hp * Wp)
     x = x.permute(0, 2, 1)
     return x
 
@@ -32,7 +34,7 @@ def tokens2im(x, with_cls=False):
         x = x[:, 1:, :]
     B, D, C = x.shape
     x = x.permute(0, 2, 1)
-    x = x.view(B, C, int(sqrt(D)), int(sqrt(D)))
+    x = x.reshape(B, C, int(sqrt(D)), int(sqrt(D)))   # <- SAFE NOW
     return x
 
 
@@ -43,19 +45,6 @@ def pair(t):
         else tuple(t[:2]) if isinstance(t, (list, tuple)) else (t, t)
     )
 
-
-
-def _load_model_module(model_name: str): 
-    if model_name.lower() == 'vit': 
-        return ViT
-    else: 
-        raise ValueError(f"Model {model_name} not found")
-    
-
-def load_model(model_name: str, model_init_args: dict): 
-    model_module = _load_model_module(model_name)
-    model = model_module(**model_init_args)
-    return model
     
 
 def load_agg_method(agg_method: str): 
@@ -67,6 +56,8 @@ def load_agg_method(agg_method: str):
         return BoQ
     elif agg_method.lower() == 'cosplace': 
         return CosPlace
+    elif agg_method.lower() == 'mixvpr': 
+        return MixVPR
     else: 
         raise ValueError(f"Aggregation method {agg_method} not found")
     
@@ -76,11 +67,20 @@ def freeze(model):
         param.requires_grad = False
 
 
+class SparseModel(nn.Module): 
+    def __init__(self, backbone, agg): 
+        super().__init__()
+        self.backbone = backbone
+        self.agg = agg
+
+    def forward(self, x, sparsity: float = 0.0): 
+        return self.agg(self.backbone(x, sparsity))
+        
+
 class PostTrainerModule(pl.LightningModule):
     def __init__(self,
-            model_name: nn.Module,
             checkpoint_path: str,
-            model_init_kwargs: dict, 
+            val_sparsity: float,
             agg_name: str, 
             agg_init_kwargs: dict,
             
@@ -94,8 +94,9 @@ class PostTrainerModule(pl.LightningModule):
             lr_mult: float = 0.3,
             ):
         super().__init__()
-        self.model = self._setup_model(model_name, model_init_kwargs, agg_name, agg_init_kwargs, checkpoint_path)
-        self.image_size = model_init_kwargs['image_size']
+        self.model = self._setup_model(agg_name, agg_init_kwargs, checkpoint_path)
+        self.val_sparsity = val_sparsity
+        self.image_size = 224
         self.optimizer = optimizer
         self.lr = lr
         self.weight_decay = weight_decay
@@ -104,19 +105,20 @@ class PostTrainerModule(pl.LightningModule):
         self.lr_mult = lr_mult
         self.save_hyperparameters(ignore=['model'])
 
-    def _setup_model(self, model_name, model_init_args, agg_name, agg_init_kwargs, checkpoint_path): 
-        backbone = load_model(model_name, model_init_args)
-        backbone = load_posttrain_checkpoint2model(backbone, checkpoint_path)
+    def _setup_model(self, agg_name, agg_init_kwargs, checkpoint_path): 
+        backbone = SparseTernaryViT()
+        #backbone = load_posttrain_checkpoint2model(backbone, checkpoint_path)
         agg_method = load_agg_method(agg_name)
-        return nn.Sequential(backbone, agg_method(**agg_init_kwargs))
+        return SparseModel(backbone, agg_method(**agg_init_kwargs))
 
     def setup(self, stage: str): 
         if stage == 'fit': 
             self._miner = MultiSimilarityMiner(epsilon=0.1, distance=CosineSimilarity())
             self._loss_fn = MultiSimilarityLoss(alpha=1.0, beta=50, base=0.0, distance=DotProductSimilarity())
 
-    def forward(self, x): 
-        return self.model(x)
+
+    def forward(self, x, sparsity: float = 0.0): 
+        return self.model(x, sparsity)
     
     def _transform(self):
         return T.Compose(
@@ -141,16 +143,17 @@ class PostTrainerModule(pl.LightningModule):
     def training_step(self, batch, batch_idx): 
         places, labels = batch 
         BS, N, ch, h, w = places.shape 
-        images = places.view(BS*N, ch, h, w) 
-        labels = labels.view(-1) 
-        descriptors = self(images) 
+        images = places.reshape(BS*N, ch, h, w) 
+        labels = labels.reshape(-1) 
+        images, labels = images.contiguous(), labels.contiguous()
+        sparsity = random.uniform(0.1, 0.6)
+        descriptors = self(images, sparsity) 
         loss = self._loss_function(descriptors, labels)
         self.log('train_loss', loss)
         return loss 
-    
 
     def on_validation_epoch_start(self):
-        desc_dim = self(self._test_inputs().to(self.device)).shape[1]
+        desc_dim = self(self._test_inputs().to(self.device), self.val_sparsity).shape[1]
         self.test_descriptors = {}
         for dataset in self.trainer.datamodule.val_datasets:
             self.test_descriptors[dataset.__repr__()] = torch.zeros(
@@ -160,7 +163,7 @@ class PostTrainerModule(pl.LightningModule):
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
         dataset_name = self.trainer.datamodule.val_datasets[dataloader_idx].__repr__()
         images, indices = batch
-        desc = self(images).detach().cpu()
+        desc = self(images, self.val_sparsity).detach().cpu()
         self.test_descriptors[dataset_name][indices] = desc.to(dtype=torch.float16)
 
     def on_validation_epoch_end(self):

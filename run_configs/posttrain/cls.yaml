@@ -1,0 +1,38 @@
+
+posttrain: 
+  module: 
+    checkpoint_path: "checkpoints/pretrain/ViT/fp_config_epoch=0-train_loss=3.4735.ckpt"
+
+    agg_name: cls
+    agg_init_args: {}
+
+    lr: 0.03
+    optimizer: 'sgd'
+    weight_decay: 1e-3
+    momentum: 0.9
+    warmpup_steps: 500
+    milestones: [5, 10, 15]
+    lr_mult: 0.3
+
+
+  data: 
+    train_data_dir: "/home/oliver/datasets_drive/vpr_datasets/gsv-cities/" 
+    val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
+    batch_size: 64
+    img_per_place: 4
+    min_img_per_place: 4
+    shuffle_all: False
+    image_size:
+      - 224
+      - 224
+    num_workers: 0
+    val_set_names:
+      - pitts30k
+
+  trainer:
+    max_epochs: 1 
+    accelerator: "auto"
+    devices: "auto"
+    precision: 32
+    num_sanity_val_steps: 0
+    limit_train_batches: 5

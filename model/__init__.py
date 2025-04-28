@@ -1,1 +1,1 @@
-from model.models import ViT
+from model.models import ViT, SparseTernaryViT

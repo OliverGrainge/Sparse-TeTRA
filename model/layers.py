@@ -63,13 +63,15 @@ class SparseTernaryLinear(nn.Linear):
         in_features: int,
         out_features: int,
         bias: bool = True,
-        sparsity: float = 0.4,
+        sparsity: float = 0.0,
     ):
         super().__init__(in_features, out_features, bias)
         self.sparsity = sparsity
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = sparsify(x, self.sparsity)
+    def forward(self, x: torch.Tensor, sparsity: float = None) -> torch.Tensor:
+        if sparsity is None:
+            sparsity = self.sparsity
+        x = sparsify(x, sparsity)  # Pre-activation sparsity
         dqw = quant(self.weight)
         x = F.linear(x, dqw, bias=self.bias)
         return x

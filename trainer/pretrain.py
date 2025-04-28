@@ -7,8 +7,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms as T
+import random
 
-from model.models import ViT
+from model.models import SparseTernaryViT
 
 
 
@@ -30,33 +31,22 @@ def freeze(model):
     for param in model.parameters():
         param.requires_grad = False
 
-
-def _load_model_module(model_name: str): 
-    if model_name.lower() == 'vit': 
-        return ViT
-    else: 
-        raise ValueError(f"Model {model_name} not found")
     
 
-def load_model(model_name: str, model_init_args: dict): 
-    model_module = _load_model_module(model_name)
-    model = model_module(**model_init_args)
-    return model
 
 
 class PreTrainerModule(pl.LightningModule):
     def __init__(self, 
-            model_name: str,
-            model_init_args: dict, 
-            lr: float = 1e-4, 
-            weight_decay: float = 0.0):
+        lr: float = 1e-4, 
+        weight_decay: float = 0.05):
+
         super().__init__()
-        self.model = load_model(model_name, model_init_args)
+        self.model = SparseTernaryViT()
+       
         self.lr = lr
         self.weight_decay = weight_decay
         self.projector = self._get_projector()
         self.teacher = self._get_teacher()
-
 
     def _get_projector(self):
         if self.model.dim != 768:
@@ -65,27 +55,35 @@ class PreTrainerModule(pl.LightningModule):
             return nn.Identity()
 
     def _get_teacher(self):
-        with open(os.devnull, "w") as devnull, contextlib.redirect_stdout(
-            devnull
-        ), contextlib.redirect_stderr(devnull):
-            teacher_model = torch.hub.load(
-                "amaralibey/bag-of-queries",
-                "get_trained_boq",
-                backbone_name="dinov2",
-                output_dim=12288,
-            )
+        teacher_model = torch.hub.load(
+            "amaralibey/bag-of-queries",
+            "get_trained_boq",
+            backbone_name="dinov2",
+            output_dim=12288,
+        )
 
         teacher_model.eval()
         freeze(teacher_model)
         return teacher_model
 
-    def forward(self, x):
-        return self.model(x)
+    def forward(self, x, sparsity):
+        return self.model(x, sparsity)
+    
+    def on_train_epoch_start(self): 
+        max_epochs = self.trainer.max_epochs 
+        range = 0.5
+        train_progress = self.trainer.current_epoch / max_epochs
+        self.sparsity_min = 0.1
+        self.sparstiy_max = 0.1 + range * train_progress
 
+    def _sample_sparstiy(self):
+        return random.uniform(self.sparsity_min, self.sparsity_max) 
+    
     def training_step(self, batch, batch_idx):
         s_img, t_img = batch
         T_features = im2tokens(self.teacher.backbone(t_img))
-        S_features = self.projector(self(s_img))
+        sparsity = self._sample_sparstiy()
+        S_features = self.projector(self(s_img, sparsity))
         loss = self._feature_loss(T_features, S_features)
         self.log("train_loss", loss)
         return loss
