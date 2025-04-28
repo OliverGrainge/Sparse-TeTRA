@@ -5,14 +5,17 @@ pretrain:
     weight_decay: 0.01
 
   data: 
-    train_data_dir: "/scratch/oeg1n18/datasets/vpr/sf_xl/processed/train"
-    batch_size: 256
+    #train_data_dir: "/scratch/oeg1n18/datasets/vpr/sf_xl/processed/train"
+    train_data_dir: "/home/oliver/datasets_drive/vpr_datasets/gsv-cities/Images"
+    #batch_size: 256
+    batch_size: 32
     num_workers: 8
     img_size: 224
     pin_memory: true
 
   trainer:
-    enable_progress_bar: false
+    #enable_progress_bar: false
+    enable_progress_bar: true
     max_epochs: 8 
     accelerator: "auto"
     devices: "auto"

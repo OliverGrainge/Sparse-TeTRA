@@ -13,6 +13,7 @@ from pytorch_metric_learning.losses import MultiSimilarityLoss
 from pytorch_metric_learning.distances import CosineSimilarity, DotProductSimilarity
 from model.aggregation import BoQ, CLS, CosPlace, SALAD, MixVPR
 from model.models import SparseTernaryViT
+from transformers import get_cosine_schedule_with_warmup
 import random 
 
 from trainer.matching import match_cosine
@@ -85,13 +86,11 @@ class PostTrainerModule(pl.LightningModule):
             agg_init_kwargs: dict,
             
             #---- Train hyperparameters
-            lr: float = 0.03, 
-            optimizer: str = 'sgd',
-            weight_decay: float = 1e-3,
+            lr: float = 0.0001, 
+            optimizer: str = 'adam',
+            weight_decay: float = 1e-4,
             momentum: float = 0.9,
-            warmpup_steps: int = 500,
-            milestones: list[int] = [5, 10, 15],
-            lr_mult: float = 0.3,
+            warmup_steps: int = 500,
             ):
         super().__init__()
         self.model = self._setup_model(agg_name, agg_init_kwargs, checkpoint_path)
@@ -101,15 +100,27 @@ class PostTrainerModule(pl.LightningModule):
         self.lr = lr
         self.weight_decay = weight_decay
         self.momentum = momentum
-        self.milestones = milestones
-        self.lr_mult = lr_mult
+        self.warmup_steps = warmup_steps
         self.save_hyperparameters(ignore=['model'])
 
     def _setup_model(self, agg_name, agg_init_kwargs, checkpoint_path): 
         backbone = SparseTernaryViT()
-        #backbone = load_posttrain_checkpoint2model(backbone, checkpoint_path)
+        backbone = load_posttrain_checkpoint2model(backbone, checkpoint_path)
+        self._freeze_backbone(backbone)
         agg_method = load_agg_method(agg_name)
         return SparseModel(backbone, agg_method(**agg_init_kwargs))
+    
+    def _freeze_backbone(self, backbone: nn.Module, unfreeze_n_blocks: int = 2):
+        for param in backbone.to_patch_embedding.parameters():
+            param.requires_grad = False
+        backbone.cls_token.requires_grad = False
+        backbone.pos_embedding.requires_grad = False
+
+        for attn, ff in backbone.transformer.layers[:-unfreeze_n_blocks]:
+            for param in attn.parameters():
+                param.requires_grad = False
+            for param in ff.parameters():
+                param.requires_grad = False
 
     def setup(self, stage: str): 
         if stage == 'fit': 
@@ -211,5 +222,9 @@ class PostTrainerModule(pl.LightningModule):
                                         weight_decay=self.weight_decay)
         else:
             raise ValueError(f'Optimizer {self.optimizer} has not been added to "configure_optimizers()"')
-        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=self.milestones, gamma=self.lr_mult)
-        return [optimizer], [scheduler]
+        scheduler = get_cosine_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=self.warmup_steps,       # Number of warmup steps
+            num_training_steps=self.trainer.max_steps    # Total number of training steps
+        )
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]

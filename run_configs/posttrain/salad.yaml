@@ -1,31 +1,35 @@
 
 posttrain: 
   module: 
-    checkpoint_path: "checkpoints/pretrain/ViT/fp_config_epoch=0-train_loss=3.4735.ckpt"
+    checkpoint_path: "checkpoints/pretrain/pretrain_epoch=0-train_loss=2.9744.ckpt"
+    val_sparsity: 0.4
 
     agg_name: salad
-    agg_init_args: {}
+    agg_init_kwargs: {}
 
-    lr: 0.03
-    optimizer: 'sgd'
-    weight_decay: 1e-3
+    lr: 0.0001
+    optimizer: 'adamw'
+    weight_decay: 0.0001
     momentum: 0.9
-    warmpup_steps: 500
-    milestones: [5, 10, 15]
-    lr_mult: 0.3
+    warmup_steps: 500
 
 
   data: 
-    train_data_dir: "/home/oliver/datasets_drive/vpr_datasets/gsv-cities/" 
+    #train_data_dir: "/home/oliver/datasets_drive/vpr_datasets/gsv-cities/" 
+    #val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
+    #train_data_dir: "/Users/olivergrainge/github/Datasets/gsv-cities/"
+    #val_data_dir: "/Users/olivergrainge/github/Datasets/"
+    train_data_dir: "/home/oliver/datasets_drive/vpr_datasets/gsv-cities/"
     val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
-    batch_size: 64
+    #batch_size: 64
+    batch_size: 128
     img_per_place: 4
     min_img_per_place: 4
     shuffle_all: False
     image_size:
       - 224
       - 224
-    num_workers: 0
+    num_workers: 12
     val_set_names:
       - pitts30k
 
@@ -33,6 +37,6 @@ posttrain:
     max_epochs: 1 
     accelerator: "auto"
     devices: "auto"
-    precision: 32
+    precision: "16-mixed"
     num_sanity_val_steps: 0
-    limit_train_batches: 5
+    limit_train_batches: 500

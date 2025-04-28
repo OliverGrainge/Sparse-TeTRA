@@ -32,7 +32,7 @@ def main():
         save_top_k=1,
         save_last=True,
         filename=config_basename + "_{epoch}-{train_loss:.4f}",
-        every_n_train_steps=2000,
+        every_n_train_steps=20,
     )
 
     data_module = PretrainDataModule(**config["pretrain"]["data"])

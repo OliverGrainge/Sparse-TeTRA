@@ -4,7 +4,7 @@ posttrain:
     checkpoint_path: "checkpoints/pretrain/pretrain_epoch=0-train_loss=2.9744.ckpt"
     val_sparsity: 0.4
 
-    agg_name: cls
+    agg_name: mixvpr
     agg_init_kwargs: {}
 
     lr: 0.0001
