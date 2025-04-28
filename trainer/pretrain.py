@@ -8,7 +8,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms as T
 
-from utils import load_model
+from model.models import ViT
+
+
 
 def im2tokens(x):
     B, C, Hp, Wp = x.shape
@@ -27,6 +29,19 @@ def tokens2im(x, with_cls=False):
 def freeze(model):
     for param in model.parameters():
         param.requires_grad = False
+
+
+def _load_model_module(model_name: str): 
+    if model_name.lower() == 'vit': 
+        return ViT
+    else: 
+        raise ValueError(f"Model {model_name} not found")
+    
+
+def load_model(model_name: str, model_init_args: dict): 
+    model_module = _load_model_module(model_name)
+    model = model_module(**model_init_args)
+    return model
 
 
 class PreTrainerModule(pl.LightningModule):

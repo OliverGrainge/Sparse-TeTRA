@@ -13,15 +13,16 @@ pretrain:
       dim_head: 64
       dropout: 0.1
       emb_dropout: 0.1
-
       embedding_norm: "LayerNorm"
       embedding_linear: "Linear"
       embedding_linear_kwargs: {}
-      attention_linear_layer: "TernaryLinear"
-      attention_linear_kwargs: {}
+      attention_linear_layer: "SparseTernaryLinear"
+      attention_linear_kwargs: 
+        sparsity: 0.4
       attention_norm_layer: "LayerNorm"
-      feedforward_linear_layer: "TernaryLinear"
-      feedforward_linear_kwargs: {}
+      feedforward_linear_layer: "SparseTernaryLinear"
+      feedforward_linear_kwargs: 
+        sparsity: 0.4
       feedforward_norm_layer: "LayerNorm"
       feedforward_activation_layer: "GELU"
     
@@ -40,4 +41,4 @@ pretrain:
     max_epochs: 6  # Reduced number of epochs
     accelerator: "auto"
     devices: "auto"
-    precision: 16
+    precision: "16-mixed"

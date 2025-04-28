@@ -4,8 +4,8 @@ import os
 import torch 
 import yaml
 from model import * 
-from model.aggregation import * 
-
+from model.aggregation import BoQ, CLS, CosPlace, ConvAP, MixVPR, SALAD
+from math import sqrt
 
 def load_config(config_path: str) -> Dict[Any, Any]:
     with open(config_path, "r") as f:
@@ -31,20 +31,7 @@ def load_posttrain_checkpoint2model(model: nn.Module, checkpoint_path: str):
     return model
 
 
-def _load_model_module(model_name: str): 
-    if model_name.lower() == 'vit': 
-        return ViT
-    else: 
-        raise ValueError(f"Model {model_name} not found")
 
-def load_model(model_name: str, model_init_args: dict): 
-    model_module = _load_model_module(model_name)
-    model = model_module(**model_init_args)
-    return model
-    
 
-def load_agg_method(agg_method: str): 
-    if agg_method.lower() == 'cls': 
-        return CLS
-    else: 
-        raise ValueError(f"Aggregation method {agg_method} not found")
+
+

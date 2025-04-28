@@ -15,6 +15,7 @@ class ViTAttention(nn.Module):
         dropout: float = 0.0,
         norm_layer: Type[nn.Module] = nn.LayerNorm,
         linear_layer: Type[nn.Module] = nn.Linear,
+        linear_kwargs: dict = {},
     ) -> None:
         super().__init__()
         inner_dim = dim_head * heads
@@ -27,10 +28,10 @@ class ViTAttention(nn.Module):
         self.attend = nn.Softmax(dim=-1)
         self.dropout = nn.Dropout(dropout)
 
-        self.to_qkv = linear_layer(dim, inner_dim * 3, bias=False)
+        self.to_qkv = linear_layer(dim, inner_dim * 3, bias=False, **linear_kwargs)
 
         self.to_out = (
-            nn.Sequential(linear_layer(inner_dim, dim), nn.Dropout(dropout))
+            nn.Sequential(linear_layer(inner_dim, dim, **linear_kwargs), nn.Dropout(dropout))
             if project_out
             else nn.Identity()
         )
@@ -60,14 +61,15 @@ class ViTFeedForward(nn.Module):
         linear_layer: Type[nn.Linear] = nn.Linear,
         norm_layer: Type[nn.LayerNorm] = nn.LayerNorm,
         activation_layer: Type[nn.Module] = nn.GELU,
+        linear_kwargs: dict = {},
     ) -> None:
         super().__init__()
         self.net = nn.Sequential(
             norm_layer(dim),
-            linear_layer(dim, hidden_dim),
+            linear_layer(dim, hidden_dim, **linear_kwargs),
             activation_layer(),
             nn.Dropout(dropout),
-            linear_layer(hidden_dim, dim),
+            linear_layer(hidden_dim, dim, **linear_kwargs),
             nn.Dropout(dropout),
         )
 

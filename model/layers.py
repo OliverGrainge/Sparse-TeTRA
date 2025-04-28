@@ -75,4 +75,4 @@ class SparseTernaryLinear(nn.Linear):
         return x
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_features}, {self.out_features})"
+        return f"{self.__class__.__name__}({self.in_features}, {self.out_features}, sparsity={self.sparsity})"

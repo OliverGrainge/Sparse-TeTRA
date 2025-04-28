@@ -11,25 +11,21 @@ from torch.optim import lr_scheduler
 from pytorch_metric_learning.miners import MultiSimilarityMiner
 from pytorch_metric_learning.losses import MultiSimilarityLoss
 from pytorch_metric_learning.distances import CosineSimilarity, DotProductSimilarity
+from model.aggregation import BoQ, CLS, CosPlace, SALAD
 
 from trainer.matching import match_cosine
 from tabulate import tabulate
 from PIL import Image
 import numpy as np
-from utils import load_model, load_posttrain_checkpoint2model, load_agg_method
+from utils import load_posttrain_checkpoint2model
+from model.models import ViT 
+
 
 def im2tokens(x):
     B, C, Hp, Wp = x.shape
     x = x.view(B, C, Hp * Wp)
     x = x.permute(0, 2, 1)
     return x
-
-def pair(t):
-    return (
-        (t, t)
-        if isinstance(t, int)
-        else tuple(t[:2]) if isinstance(t, (list, tuple)) else (t, t)
-    )
 
 def tokens2im(x, with_cls=False):
     if with_cls:
@@ -40,6 +36,41 @@ def tokens2im(x, with_cls=False):
     return x
 
 
+def pair(t):
+    return (
+        (t, t)
+        if isinstance(t, int)
+        else tuple(t[:2]) if isinstance(t, (list, tuple)) else (t, t)
+    )
+
+
+
+def _load_model_module(model_name: str): 
+    if model_name.lower() == 'vit': 
+        return ViT
+    else: 
+        raise ValueError(f"Model {model_name} not found")
+    
+
+def load_model(model_name: str, model_init_args: dict): 
+    model_module = _load_model_module(model_name)
+    model = model_module(**model_init_args)
+    return model
+    
+
+def load_agg_method(agg_method: str): 
+    if agg_method.lower() == 'cls': 
+        return CLS
+    elif agg_method.lower() == 'salad': 
+        return SALAD
+    elif agg_method.lower() == 'boq': 
+        return BoQ
+    elif agg_method.lower() == 'cosplace': 
+        return CosPlace
+    else: 
+        raise ValueError(f"Aggregation method {agg_method} not found")
+    
+
 def freeze(model):
     for param in model.parameters():
         param.requires_grad = False
@@ -49,9 +80,9 @@ class PostTrainerModule(pl.LightningModule):
     def __init__(self,
             model_name: nn.Module,
             checkpoint_path: str,
-            model_init_args: dict, 
+            model_init_kwargs: dict, 
             agg_name: str, 
-            agg_init_args: dict,
+            agg_init_kwargs: dict,
             
             #---- Train hyperparameters
             lr: float = 0.03, 
@@ -63,8 +94,8 @@ class PostTrainerModule(pl.LightningModule):
             lr_mult: float = 0.3,
             ):
         super().__init__()
-        self.model = self._setup_model(model_name, model_init_args, agg_name, agg_init_args, checkpoint_path)
-        self.image_size = model_init_args['image_size']
+        self.model = self._setup_model(model_name, model_init_kwargs, agg_name, agg_init_kwargs, checkpoint_path)
+        self.image_size = model_init_kwargs['image_size']
         self.optimizer = optimizer
         self.lr = lr
         self.weight_decay = weight_decay
@@ -73,11 +104,11 @@ class PostTrainerModule(pl.LightningModule):
         self.lr_mult = lr_mult
         self.save_hyperparameters(ignore=['model'])
 
-    def _setup_model(self, model_name, model_init_args, agg_name, agg_init_args, checkpoint_path): 
+    def _setup_model(self, model_name, model_init_args, agg_name, agg_init_kwargs, checkpoint_path): 
         backbone = load_model(model_name, model_init_args)
         backbone = load_posttrain_checkpoint2model(backbone, checkpoint_path)
         agg_method = load_agg_method(agg_name)
-        return nn.Sequential(backbone, agg_method(**agg_init_args))
+        return nn.Sequential(backbone, agg_method(**agg_init_kwargs))
 
     def setup(self, stage: str): 
         if stage == 'fit': 

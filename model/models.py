@@ -38,6 +38,8 @@ class Transformer(nn.Module):
         feedforward_activation_layer: Type[nn.Module] = nn.GELU,
         attention_linear_layer: Type[nn.Linear] = nn.Linear,
         feedforward_linear_layer: Type[nn.Linear] = nn.Linear,
+        attention_linear_kwargs: dict = {},
+        feedforward_linear_kwargs: dict = {},
     ) -> None:
         super().__init__()
         self.norm = nn.LayerNorm(dim)
@@ -53,6 +55,7 @@ class Transformer(nn.Module):
                             dropout=dropout,
                             norm_layer=attention_norm_layer,
                             linear_layer=attention_linear_layer,
+                            linear_kwargs=attention_linear_kwargs,
                         ),
                         ViTFeedForward(
                             dim,
@@ -61,6 +64,7 @@ class Transformer(nn.Module):
                             norm_layer=feedforward_norm_layer,
                             activation_layer=feedforward_activation_layer,
                             linear_layer=feedforward_linear_layer,
+                            linear_kwargs=feedforward_linear_kwargs,
                         ),
                     ]
                 )
@@ -89,8 +93,10 @@ class ViT(nn.Module):
         embedding_norm: str = "LayerNorm",
         embedding_linear: str = "Linear",
         attention_linear_layer: str = "Linear",
+        attention_linear_kwargs: dict = {},
         attention_norm_layer: str = "LayerNorm",
         feedforward_linear_layer: str = "Linear",
+        feedforward_linear_kwargs: dict = {},
         feedforward_norm_layer: str = "LayerNorm",
         feedforward_activation_layer: str = "GELU",
     ) -> None:
@@ -134,7 +140,9 @@ class ViT(nn.Module):
                 feedforward_activation_layer.lower()
             ],
             attention_linear_layer=LAYERS_REGISTRY[attention_linear_layer.lower()],
+            attention_linear_kwargs=attention_linear_kwargs,
             feedforward_linear_layer=LAYERS_REGISTRY[feedforward_linear_layer.lower()],
+            feedforward_linear_kwargs=feedforward_linear_kwargs,
         )
 
     def forward(self, img: torch.Tensor) -> torch.Tensor:
