@@ -1,31 +1,28 @@
-from model import ViT, SparseTernaryViT
-from model.aggregation import BoQ, SALAD, MixVPR, CosPlace, ConvAP, GeM
-import torch 
 
-model = SparseTernaryViT()
-agg = BoQ(**{})
+from model.baselines import DinoBoQ, DinoSalad, CosPlace, EigenPlaces, MixVPR
+import torch
+import torch.profiler
 
-# Create random input image
-img = torch.randn(16, 3, 224, 224, requires_grad=True)
+model = DinoBoQ()
+input = torch.randn(1, 3, 322, 322)
+with torch.no_grad():
+    model(input)  # warm-up
 
-# Forward pass
-out = model(img, sparsity=0.99999999999)
-print("Output shape after backbone:", out.shape)
+with torch.profiler.profile(
+        activities=[torch.profiler.ProfilerActivity.CPU],
+        record_shapes=True,
+        with_flops=True) as prof:
+    with torch.no_grad():
+        model(input)
 
-out = agg(out)
-print("Output shape after aggregation:", out.shape)
-
-# Compute dummy loss and check backprop
-loss = out.sum()
-loss.backward()
-
-# Check if gradients exist
-print("\nGradient check:")
-print("Input gradient exists:", img.grad is not None)
-print("Model has gradients:", any(p.grad is not None for p in model.parameters()))
-print("Aggregator has gradients:", any(p.grad is not None for p in agg.parameters()))
+events = prof.key_averages()
 
 
-
-
-
+SPARSITY = 0.40
+adjusted_flops = 0
+for evt in events:
+    if "linear" in evt.key.lower() or "addmm" in evt.key.lower():   
+        adjusted_flops += evt.flops * (1 - SPARSITY)
+    else:
+        print(evt.key.lower(), evt.flops)
+        adjusted_flops += evt.flops

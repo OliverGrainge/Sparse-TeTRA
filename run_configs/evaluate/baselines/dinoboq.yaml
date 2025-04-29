@@ -1,7 +1,6 @@
 
 eval: 
-  model_module: 
-    baseline: "dinoboq"
+  baseline: "dinoboq"
 
   evaluate_module:  
     #val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
@@ -9,7 +8,7 @@ eval:
     val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
     val_set_names:
       - pitts30k 
-      - msls 
+      #- msls 
     image_size: 322
     batch_size: 64
     num_workers: 8

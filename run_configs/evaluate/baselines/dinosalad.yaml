@@ -1,7 +1,6 @@
 
 eval: 
-  model_module: 
-    baseline: "dinosalad"
+  baseline: "dinosalad"
 
   evaluate_module:  
     #val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"

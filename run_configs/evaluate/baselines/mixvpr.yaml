@@ -1,6 +1,6 @@
 
 eval: 
-  checkpoint_path: "checkpoints/posttrain/boq/boq_epoch=0-val_recall=89.3486.ckpt"
+  baseline: "mixvpr"
 
   evaluate_module:  
     #val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
@@ -8,8 +8,8 @@ eval:
     val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
     val_set_names:
       - pitts30k 
-      #- msls s
-    image_size: 224
+      - msls
+    image_size: 320
     batch_size: 64
     num_workers: 8
 

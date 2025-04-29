@@ -7,6 +7,7 @@ import torch.nn as nn
 import torchvision.transforms as T
 from PIL import Image
 from tabulate import tabulate
+import torch.profiler
 from torch.utils.data import DataLoader
 
 from dataloader.val import ALL_DATASETS
@@ -38,7 +39,7 @@ class EvaluateModule(pl.LightningModule):
         self.num_workers = num_workers
         self.val_data_dir = val_data_dir
         self.sparsity = sparsity
-        
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 
@@ -50,6 +51,7 @@ class EvaluateModule(pl.LightningModule):
                 T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ]
         )
+    
 
     def setup(self, stage: str):
         if stage == "test":
@@ -104,10 +106,10 @@ class EvaluateModule(pl.LightningModule):
         desc = self(images).detach().cpu()
         self.test_descriptors[dataset_name][indices] = desc.to(dtype=torch.float16)
 
+
     def on_test_end(self):
         all_recalls = {}
         ks = (1, 5, 10)
-
         for dataset in self.test_datasets:
             dataset_name = dataset.__repr__()
             descs = self.test_descriptors[dataset_name]
