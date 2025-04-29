@@ -23,7 +23,7 @@ class EvaluateModule(pl.LightningModule):
     def __init__(
         self,
         model: nn.Module,
-        val_dataset_dir: str,
+        val_data_dir: str,
         val_set_names: list[str],
         image_size: int,
         batch_size: int,
@@ -35,7 +35,7 @@ class EvaluateModule(pl.LightningModule):
         self.image_size = image_size
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.val_dataset_dir = val_dataset_dir
+        self.val_data_dir = val_data_dir
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
@@ -58,7 +58,7 @@ class EvaluateModule(pl.LightningModule):
 
             self.test_datasets = [
                 ALL_DATASETS[dataset_name](
-                    val_dataset_dir=self.val_dataset_dir,
+                    val_dataset_dir=self.val_data_dir,
                     input_transform=self._transform(),
                     which_set="test",
                 )
@@ -124,3 +124,5 @@ class EvaluateModule(pl.LightningModule):
 
         print("\nResults: ", self.model.__class__.__name__)
         print(tabulate(table_data, headers=headers, tablefmt="grid"))
+
+        self.test_results = all_recalls

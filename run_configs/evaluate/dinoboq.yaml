@@ -1,0 +1,21 @@
+
+eval: 
+  model_module: 
+    baseline: "dinoboq"
+
+  evaluate_module:  
+    #val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
+    #val_data_dir: "/Users/olivergrainge/github/Datasets/"
+    val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
+    val_set_names:
+      - pitts30k 
+      - msls 
+    image_size: 224
+    batch_size: 64
+    num_workers: 8
+
+  trainer: 
+    accelerator: "auto"
+    precision: "16-mixed"
+    max_epochs: 1 
+

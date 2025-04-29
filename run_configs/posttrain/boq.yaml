@@ -1,7 +1,7 @@
 
 posttrain: 
   module: 
-    checkpoint_path: "checkpoints/pretrain/pretrain_epoch=0-train_loss=2.9744.ckpt"
+    checkpoint_path: "checkpoints/pretrain/pretrain_epoch=1-train_loss=1.8119.ckpt"
     val_sparsity: 0.4
 
     agg_name: boq
