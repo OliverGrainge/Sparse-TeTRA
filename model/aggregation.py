@@ -30,6 +30,9 @@ class CLS(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
         return x[:, 0, :]
     
+    def __repr__(self):
+        return f'CLS'
+    
 
 
 # =============================== SALAD =============================== 
@@ -174,6 +177,9 @@ class SALAD(nn.Module):
 
         return nn.functional.normalize(f, p=2, dim=-1)
     
+    def __repr__(self): 
+        return f'SALAD'
+    
 
 # =============================== BoQ =============================== 
 
@@ -240,6 +246,9 @@ class BoQ(torch.nn.Module):
         out = out.reshape(out.size(0), -1)
         out = torch.nn.functional.normalize(out, p=2, dim=-1)
         return out#, attns
+    
+    def __repr__(self): 
+        return f'BoQ'
 
 
 
@@ -306,6 +315,9 @@ class MixVPR(nn.Module):
         x = F.normalize(x.flatten(1), p=2, dim=-1)
         return x
     
+    def __repr__(self): 
+        return f'MixVPR'
+    
 
 
 # =============================== CosPlace =============================== 
@@ -343,6 +355,9 @@ class CosPlace(nn.Module):
         x = F.normalize(x, p=2, dim=1)
         return x
     
+    def __repr__(self): 
+        return f'CosPlace'
+    
 
 
 # =============================== ConvAP =============================== 
@@ -373,3 +388,6 @@ class ConvAP(nn.Module):
         x = self.AAP(x)
         x = F.normalize(x.flatten(1), p=2, dim=1)
         return x
+    
+    def __repr__(self): 
+        return f'ConvAP'

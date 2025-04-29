@@ -8,7 +8,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from dataloader.train import PretrainDataModule
 from model import ViT
 from trainer import PreTrainerModule
-from utils import load_config
+from common import load_config
 
 torch.set_float32_matmul_precision("high")
 

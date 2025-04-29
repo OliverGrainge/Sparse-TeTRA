@@ -20,7 +20,7 @@ from trainer.matching import match_cosine
 from tabulate import tabulate
 from PIL import Image
 import numpy as np
-from utils import load_posttrain_checkpoint2model
+from common import load_posttrain_checkpoint2model
 from model.models import ViT 
 
 
@@ -76,6 +76,9 @@ class SparseModel(nn.Module):
 
     def forward(self, x, sparsity: float = 0.0): 
         return self.agg(self.backbone(x, sparsity))
+    
+    def __repr__(self): 
+        return f"sparse-vit-{self.agg.__repr__()}"
         
 
 class PostTrainerModule(pl.LightningModule):
