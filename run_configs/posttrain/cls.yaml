@@ -7,10 +7,8 @@ posttrain:
     agg_name: cls
     agg_init_kwargs: {}
 
-    lr: 0.0001
-    optimizer: 'adamw'
+    lr: 0.0002
     weight_decay: 0.0001
-    momentum: 0.9
     warmup_steps: 500
 
 
@@ -21,7 +19,6 @@ posttrain:
     #val_data_dir: "/Users/olivergrainge/github/Datasets/"
     train_data_dir: "/home/oliver/datasets_drive/vpr_datasets/gsv-cities/"
     val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
-    #batch_size: 64
     batch_size: 128
     img_per_place: 4
     min_img_per_place: 4
@@ -34,9 +31,9 @@ posttrain:
       - pitts30k
 
   trainer:
-    max_epochs: 1 
+    max_epochs: 5
     accelerator: "auto"
     devices: "auto"
     precision: "16-mixed"
     num_sanity_val_steps: 0
-    limit_train_batches: 500
+    log_every_n_steps: 10

@@ -28,6 +28,7 @@ class EvaluateModule(pl.LightningModule):
         image_size: int,
         batch_size: int,
         num_workers: int,
+        sparsity: float = 0.0,
     ):
         super().__init__()
         self.model = model
@@ -36,7 +37,8 @@ class EvaluateModule(pl.LightningModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.val_data_dir = val_data_dir
-
+        self.sparsity = sparsity
+        
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 

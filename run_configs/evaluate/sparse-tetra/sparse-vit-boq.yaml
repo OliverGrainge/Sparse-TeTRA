@@ -1,8 +1,6 @@
 
 eval: 
-  model_module: 
-    checkpoint_path: "checkpoints/posttrain/boq/boq_epoch=0-val_recall=89.3486.ckpt"
-    sparsity: 0.2
+  checkpoint_path: "checkpoints/posttrain/boq/boq_epoch=0-val_recall=89.3486.ckpt"
 
   evaluate_module:  
     #val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"

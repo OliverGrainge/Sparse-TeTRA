@@ -3,7 +3,7 @@ import argparse
 import pytorch_lightning as pl
 import torch
 from lightning.pytorch.loggers import WandbLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 
 from dataloader.train import PostTrainDataModule
 from model import ViT
@@ -31,10 +31,10 @@ def main():
         save_last=True,
         filename=config_basename + "_{epoch}-{val_recall:.4f}",
     )
-
+    lr_monitor = LearningRateMonitor(logging_interval="step")
     data_module = PostTrainDataModule(**config["posttrain"]["data"])
     model_module = PostTrainerModule(**config["posttrain"]["module"])
-    trainer = pl.Trainer(**config["posttrain"]["trainer"], logger=wandb_logger, callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(**config["posttrain"]["trainer"], logger=wandb_logger, callbacks=[checkpoint_callback, lr_monitor])
     trainer.fit(model_module, data_module)
 
 

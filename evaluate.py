@@ -16,6 +16,7 @@ from common import load_config
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str)
+    parser.add_argument("--sparsity", type=float, default=0.0)
     return parser.parse_args()
 
 
@@ -28,16 +29,15 @@ def _load_baseline(model_name):
         raise ValueError(f"Model {model_name} not found")
 
 
-def _load_model(config): 
-    if "baseline" in config["eval"]["model_module"]: 
-        model = _load_baseline(config["eval"]["model_module"]["baseline"])
-        print(model)
+def _load_model(config, args): 
+    if "baseline" in config["eval"]: 
+        model = _load_baseline(config["eval"]["baseline"])
         return model 
     else: 
-        posttrain_module = PostTrainerModule.load_from_checkpoint(config["eval"]["model_module"]["checkpoint_path"])
-        sparsity = config["eval"]["model_module"]["sparsity"]
+        posttrain_module = PostTrainerModule.load_from_checkpoint(config["eval"]["checkpoint_path"])
+        sparsity = args.sparsity
         model = posttrain_module.model
-        model.forward = partial(model.forward, sparsity=config["eval"]["model_module"]["sparsity"])
+        model.forward = partial(model.forward, sparsity=sparsity)
         model.eval()
         return model
 
@@ -126,7 +126,7 @@ def add_posttrain_result(config, module, result):
     df.to_csv("results/results.csv", index=False)
 
 def add_results(config, module, results):
-    if "baseline" in config["eval"]["model_module"]: 
+    if "baseline" in config["eval"]: 
         add_baseline_result(config, module, results)
     else: 
         add_posttrain_result(config, module, results)
@@ -134,13 +134,13 @@ def add_results(config, module, results):
 def main(): 
     args = parse_args()
     config = load_config(args.config)
-    model = _load_model(config)
+    model = _load_model(config, args)
 
-    eval_module = EvaluateModule(model, **config["eval"]["evaluate_module"])
+    eval_module = EvaluateModule(model, **config["eval"]["evaluate_module"], sparsity=args.sparsity)
     trainer = pl.Trainer(**config["eval"]["trainer"])
     #trainer.test(eval_module)
 
-    result = {'Pitts30k': {1: 92.38556338028168, 5: 96.30281690140845, 10: 97.37382629107981}, 'MSLS': {1: 88.19920606279321, 5: 93.75676651028509, 10: 95.10104655359076}, 'flops': 500, 'sparsity': 0.9}
+    result = {'Pitts30k': {1: 92.38556338028168, 5: 96.30281690140845, 10: 97.37382629107981}, 'MSLS': {1: 88.19920606279321, 5: 93.75676651028509, 10: 95.10104655359076}, 'flops': 500, 'sparsity': args.sparsity}
     #results = eval_module.test_results 
     add_results(config, eval_module, result)
 

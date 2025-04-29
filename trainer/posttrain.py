@@ -90,19 +90,15 @@ class PostTrainerModule(pl.LightningModule):
             
             #---- Train hyperparameters
             lr: float = 0.0001, 
-            optimizer: str = 'adam',
             weight_decay: float = 1e-4,
-            momentum: float = 0.9,
             warmup_steps: int = 500,
             ):
         super().__init__()
         self.model = self._setup_model(agg_name, agg_init_kwargs, checkpoint_path)
         self.val_sparsity = val_sparsity
         self.image_size = 224
-        self.optimizer = optimizer
         self.lr = lr
         self.weight_decay = weight_decay
-        self.momentum = momentum
         self.warmup_steps = warmup_steps
         self.save_hyperparameters(ignore=['model'])
 
@@ -210,24 +206,14 @@ class PostTrainerModule(pl.LightningModule):
         self.log('val_recall', all_recalls[log_dataset][1])
 
     def configure_optimizers(self):
-        if self.optimizer.lower() == 'sgd':
-            optimizer = torch.optim.SGD(self.parameters(), 
-                                        lr=self.lr, 
-                                        weight_decay=self.weight_decay, 
-                                        momentum=self.momentum)
-        elif self.optimizer.lower() == 'adamw':
-            optimizer = torch.optim.AdamW(self.parameters(), 
-                                        lr=self.lr, 
-                                        weight_decay=self.weight_decay)
-        elif self.optimizer.lower() == 'adam':
-            optimizer = torch.optim.AdamW(self.parameters(), 
-                                        lr=self.lr, 
-                                        weight_decay=self.weight_decay)
-        else:
-            raise ValueError(f'Optimizer {self.optimizer} has not been added to "configure_optimizers()"')
+
+        optimizer = torch.optim.AdamW(self.parameters(), 
+                                    lr=self.lr, 
+                                    weight_decay=self.weight_decay)
+
         scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=self.warmup_steps,       # Number of warmup steps
-            num_training_steps=self.trainer.max_steps    # Total number of training steps
+            num_training_steps=self.trainer.estimated_stepping_batches    # Total number of training steps including warmup
         )
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
