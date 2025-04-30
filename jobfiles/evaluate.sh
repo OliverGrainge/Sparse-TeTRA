@@ -6,13 +6,13 @@
 
 # List of config files and sparsity values
 configs=(
-    #"run_configs/evaluate/sparse-tetra/sparse-vit-boq.yaml"
-    "run_configs/evaluate/sparse-tetra/sparse-vit-salad.yaml" 
-    #"run_configs/evaluate/sparse-tetra/sparse-vit-mixvpr.yaml"
-    #"run_configs/evaluate/sparse-tetra/sparse-vit-cls.yaml"
+    "run_configs/evaluate/sparse-tetra/sparse-vit-boq.yaml"
+    #"run_configs/evaluate/sparse-tetra/sparse-vit-salad.yaml" 
+    "run_configs/evaluate/sparse-tetra/sparse-vit-mixvpr.yaml"
+    "run_configs/evaluate/sparse-tetra/sparse-vit-cls.yaml"
 )
 
-sparsity_values=(0.3 0.5)
+sparsity_values=(0.4)
 
 # Loop through configs and sparsity values
 for config in "${configs[@]}"; do

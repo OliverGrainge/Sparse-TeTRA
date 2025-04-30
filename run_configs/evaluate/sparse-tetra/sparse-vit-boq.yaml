@@ -9,13 +9,13 @@ eval:
     val_set_names:
       #- pitts30k 
       #- msls 
-      - tokyo247
-      - eynsham 
-      #- svox_night 
-      #- svox_sun 
-      #- svox_snow 
-      #- svox_overcast  
-      #- svox_rain 
+      #- tokyo247
+      #- eynsham 
+      - svox_night 
+      - svox_sun 
+      - svox_snow 
+      - svox_overcast  
+      - svox_rain 
     image_size: 224
     batch_size: 64
     num_workers: 8

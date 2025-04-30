@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 # --- Configuration ---------------------------------------------------------
 DATASET = "Pitts30k"
 METRIC = "recall@1"
-METHODS = ["sparse-vit-BoQ", "sparse-vit-MixVPR", "sparse-vit-CLS"]
+METHODS = ["sparse-vit-BoQ", "sparse-vit-MixVPR", "sparse-vit-CLS", "sparse-vit-SALAD"]
 BASELINES = ["DINOv2-SALAD", "CosPlace", "EigenPlaces", "DINOv2-BoQ"]
 
 try:
