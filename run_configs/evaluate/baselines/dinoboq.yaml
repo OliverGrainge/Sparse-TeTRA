@@ -11,10 +11,11 @@ eval:
       #- msls 
       #- tokyo247
       #- eynsham 
-      - svox_night 
-      - svox_sun 
-      - svox_snow 
-      - svox_overcast 
+      #- svox_night 
+      #- svox_sun 
+      #- svox_snow 
+      #- svox_overcast 
+      - svox_rain 
     image_size: 322
     batch_size: 64
     num_workers: 8
