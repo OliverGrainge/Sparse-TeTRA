@@ -7,7 +7,7 @@ from pathlib import Path
 # --------------------------- Configuration ---------------------------------
 DATASET   = "Pitts30k"
 METRIC    = "recall@1"
-MEM_COL   = "memory"        # assumed to be in MB; convert below
+MEM_COL   = "memory"        # memory values are in MB
 SPARSE_RE = re.compile(r"sparse-vit-(?P<head>[A-Za-z]+)(?:-(?P<sparsity>\d+))?")
 
 METHOD_HEADS = ["BoQ", "MixVPR", "CLS"]
@@ -19,21 +19,17 @@ BASE_MARKERS = ["D", "P", "X", "v"]
 results_df   = pd.read_csv("results/results.csv")
 baselines_df = pd.read_csv("results/baselines.csv")
 
-# Canonical units: convert MB → GB for readability
-for df in (results_df, baselines_df):
-    if MEM_COL in df.columns:
-        df[MEM_COL] = df[MEM_COL] / 1024.0          # MB → GB
-
 # ---------------------- Extract sparsity information -----------------------
 def get_sparse_meta(row):
     m = SPARSE_RE.fullmatch(row["model"])
     if m:
-        sparsity = (100 - int(m["sparsity"])) if m["sparsity"] else 0
-        return pd.Series({"head": m["head"], "sparsity": sparsity})
-    return pd.Series({"head": None, "sparsity": None})
+        # percentage of weights *kept* (sparsity)
+        pct = 100 * row["sparsity"] if "sparsity" in row else 100
+        return pd.Series({"head": m["head"], "sparsity_pct": pct})
+    return pd.Series({"head": None, "sparsity_pct": None})
 
-sparse_meta = results_df.apply(get_sparse_meta, axis=1)
-results_df  = pd.concat([results_df, sparse_meta], axis=1)
+results_df = pd.concat([results_df, results_df.apply(get_sparse_meta, axis=1)], axis=1)
+
 
 # Keep only the requested dataset
 results_df   = results_df.query("dataset == @DATASET")
@@ -45,14 +41,14 @@ fig, ax = plt.subplots(figsize=(6, 4), dpi=300)
 
 # --- sparse-ViT points ------------------------------------------------------
 cmap   = plt.get_cmap("viridis")
-norm   = mpl.colors.Normalize(vmin=0, vmax=90)     # 0% (dense)  →  90% sparse
+norm   = mpl.colors.Normalize(vmin=0, vmax=60)     # 40% sparse → 100% (dense)
 
 for head in METHOD_HEADS:
     df_head = results_df.query("head == @head")
     sc = ax.scatter(
         df_head[MEM_COL],
         df_head[METRIC],
-        c=df_head["sparsity"],
+        c=df_head["sparsity_pct"],        # <- use the unique column
         cmap=cmap,
         norm=norm,
         marker=HEAD_MARKERS[head],
@@ -60,11 +56,11 @@ for head in METHOD_HEADS:
         edgecolors="black",
         linewidths=0.5,
         label=f"sparse-ViT-{head}"
-    )
+)
 
 # colourbar keyed to sparsity level
 cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax)
-cbar.set_label("Sparsity removed (%)", rotation=270, labelpad=15)
+cbar.set_label("Activation Sparsity (%)", rotation=270, labelpad=15)
 
 # --- Baseline curves -------------------------------------------------------
 for b, mk in zip(BASELINES, BASE_MARKERS):
@@ -81,7 +77,7 @@ for b, mk in zip(BASELINES, BASE_MARKERS):
     )
 
 # -------------------------- Axis cosmetics ---------------------------------
-ax.set_xlabel("Memory footprint (GB)")
+ax.set_xlabel("Memory footprint (MB)")
 ax.set_ylabel("Recall@1")
 ax.set_title(f"{DATASET}: Memory vs. Recall@1")
 ax.set_xscale("log")          # optional: comment out if memory range is narrow
@@ -91,5 +87,5 @@ fig.tight_layout()
 
 # --------------------------- Save & show -----------------------------------
 Path("plots/images").mkdir(parents=True, exist_ok=True)
-fig.savefig("plots/images/memory_vs_recall.png", bbox_inches="tight", dpi=300)
+fig.savefig("plots/images/fig2.png", bbox_inches="tight", dpi=300)
 plt.close(fig)

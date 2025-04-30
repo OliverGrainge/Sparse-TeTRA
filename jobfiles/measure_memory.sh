@@ -5,7 +5,7 @@
 sparsity=(0.0 0.1 0.2 0.3 0.4 0.5 0.6)
 baseline_configs=(
     "run_configs/evaluate/sparse-tetra/sparse-vit-boq.yaml"
-    "run_configs/evaluate/sparse-tetra/sprase-vit-salad.yaml"
+    "run_configs/evaluate/sparse-tetra/sparse-vit-salad.yaml"
     "run_configs/evaluate/sparse-tetra/sparse-vit-mixvpr.yaml"
     "run_configs/evaluate/sparse-tetra/sparse-vit-cls.yaml"
 )
