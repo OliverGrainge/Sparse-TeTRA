@@ -16,3 +16,4 @@ checkpoints/*
 *.pyw
 *.pyz
 lightning_logs/*
+dataloader/val/image_paths/*
