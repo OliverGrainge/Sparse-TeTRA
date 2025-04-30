@@ -12,6 +12,8 @@ import sys
 sys.path.append('/home/oliver/.cache/torch/hub/serizba_salad_main')
 import os
 
+torch.set_float32_matmul_precision('medium')
+
 from common import load_config
 
 def parse_args():

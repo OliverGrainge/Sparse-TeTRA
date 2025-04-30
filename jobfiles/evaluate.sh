@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+
+
+
 # List of config files and sparsity values
 configs=(
     "run_configs/evaluate/sparse-tetra/sparse-vit-boq.yaml"
@@ -16,3 +20,24 @@ for config in "${configs[@]}"; do
         python evaluate.py --config "$config" --sparsity "$sparsity"
     done
 done
+
+
+
+baseline_configs=(
+    "run_configs/evaluate/baselines/dinoboq.yaml"
+    "run_configs/evaluate/baselines/cosplace.yaml"
+    "run_configs/evaluate/baselines/eigenplace.yaml"
+    "run_configs/evaluate/baselines/dinosalad.yaml"
+    "run_configs/evaluate/baselines/mixvpr.yaml"
+)
+
+# Run evaluation for each baseline config
+for baseline_config in "${baseline_configs[@]}"; do
+    python evaluate.py --config "$baseline_config"
+done
+
+
+
+
+
+

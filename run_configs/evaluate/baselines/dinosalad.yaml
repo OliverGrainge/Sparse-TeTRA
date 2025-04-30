@@ -7,8 +7,14 @@ eval:
     #val_data_dir: "/Users/olivergrainge/github/Datasets/"
     val_data_dir: "/home/oliver/datasets_drive/vpr_datasets"
     val_set_names:
-      - pitts30k 
-      - msls 
+      #- pitts30k 
+      #- msls 
+      #- tokyo247
+      #- eynsham 
+      - svox_night 
+      - svox_sun 
+      - svox_snow 
+      - svox_overcast 
     image_size: 322
     batch_size: 64
     num_workers: 8
