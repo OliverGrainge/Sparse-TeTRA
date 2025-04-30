@@ -15,11 +15,11 @@ configs=(
 sparsity_values=(0.0 0.1 0.2 0.3 0.4 0.5 0.6)
 
 # Loop through configs and sparsity values
-for config in "${configs[@]}"; do
-    for sparsity in "${sparsity_values[@]}"; do
-        python evaluate.py --config "$config" --sparsity "$sparsity"
-    done
-done
+#for config in "${configs[@]}"; do
+#    for sparsity in "${sparsity_values[@]}"; do
+#        python evaluate.py --config "$config" --sparsity "$sparsity"
+#    done
+#done
 
 
 
