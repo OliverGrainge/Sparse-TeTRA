@@ -3,15 +3,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from pathlib import Path
+import seaborn as sns
+sns.set_style("whitegrid") 
 
 # --------------------------- Configuration ---------------------------------
 DATASET   = "Pitts30k"
 METRIC    = "recall@1"
 MEM_COL   = "memory"        # memory values are in MB
-SPARSE_RE = re.compile(r"sparse-vit-(?P<head>[A-Za-z]+)(?:-(?P<sparsity>\d+))?")
+SPARSE_RE = re.compile(r"TAT-VPR-(?P<head>[A-Za-z]+)(?:-(?P<sparsity>\d+))?")
 
-METHOD_HEADS = ["BoQ", "MixVPR", "CLS"]
-HEAD_MARKERS = {"BoQ": "o", "MixVPR": "s", "CLS": "^"}      # shape by retrieval head
+METHOD_HEADS = ["BoQ", "MixVPR", "CLS", "SALAD"]
+HEAD_MARKERS = {"BoQ": "o", "MixVPR": "s", "CLS": "^", "SALAD": "X"}      # shape by retrieval head
 BASELINES    = ["DINOv2-SALAD", "CosPlace", "EigenPlaces", "DINOv2-BoQ"]
 BASE_MARKERS = ["D", "P", "X", "v"]
 
@@ -36,7 +38,7 @@ results_df   = results_df.query("dataset == @DATASET")
 baselines_df = baselines_df.query("dataset == @DATASET")
 
 # --------------------------- Plotting --------------------------------------
-plt.style.use("seaborn-whitegrid")
+#plt.style.use("seaborn-whitegrid")
 fig, ax = plt.subplots(figsize=(6, 4), dpi=300)
 
 # --- sparse-ViT points ------------------------------------------------------
@@ -55,7 +57,7 @@ for head in METHOD_HEADS:
         s=60,
         edgecolors="black",
         linewidths=0.5,
-        label=f"sparse-ViT-{head}"
+        label=f"TAT-VPR-{head}"
 )
 
 # colourbar keyed to sparsity level
@@ -79,7 +81,7 @@ for b, mk in zip(BASELINES, BASE_MARKERS):
 # -------------------------- Axis cosmetics ---------------------------------
 ax.set_xlabel("Memory footprint (MB)")
 ax.set_ylabel("Recall@1")
-ax.set_title(f"{DATASET}: Memory vs. Recall@1")
+ax.set_title(f"Recall@1 vs. Memory on {DATASET}", fontsize=14)
 ax.set_xscale("log")          # optional: comment out if memory range is narrow
 ax.grid(True, linestyle=":", linewidth=0.7)
 ax.legend(fontsize=8, frameon=True, edgecolor="0.8")

@@ -1,10 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_style("whitegrid") 
 
 # --- Configuration ---------------------------------------------------------
 DATASET = "Pitts30k"
 METRIC = "recall@1"
-METHODS = ["sparse-vit-BoQ", "sparse-vit-MixVPR", "sparse-vit-CLS", "sparse-vit-SALAD"]
+METHODS = ["TAT-VPR-BoQ", "TAT-VPR-MixVPR", "TAT-VPR-CLS", "TAT-VPR-SALAD"]
 BASELINES = ["DINOv2-SALAD", "CosPlace", "EigenPlaces", "DINOv2-BoQ"]
 
 try:
@@ -13,7 +15,7 @@ try:
     baselines_df = pd.read_csv("results/baselines.csv")
 
     # Matplotlib style for a clean, white background with gridlines
-    plt.style.use("seaborn-whitegrid")
+    #plt.style.use("seaborn-whitegrid")
 
     # --- Figure Setup ----------------------------------------------------------
     fig, ax = plt.subplots(figsize=(6, 4), dpi=300)  # 6×4 inches at 300 dpi
@@ -31,7 +33,7 @@ try:
                 continue
                 
             ax.plot(
-                df["flops"],
+                df["flops"] / 1e12,  # Convert to TOPS
                 df[METRIC],
                 label=method,
                 marker=markers[i % len(markers)],
@@ -52,7 +54,7 @@ try:
                 continue
                 
             ax.plot(
-                df["flops"],
+                df["flops"] / 1e12,  # Convert to TOPS
                 df[METRIC],
                 label=base + " (baseline)",
                 marker=markers[j % len(markers)],
@@ -65,10 +67,10 @@ try:
             print(f"Error plotting baseline {base}: {str(e)}")
 
     # --- Axes & Labels ---------------------------------------------------------
-    ax.set_xscale("log")                        # FLOPs typically span orders of magnitude
-    ax.set_xlabel("FLOPs (×10⁹)", fontsize=12)
+    ax.set_xscale("log")                        # TOPS typically span orders of magnitude
+    ax.set_xlabel("TOPS", fontsize=12)  # Changed from FLOPs to TOPS
     ax.set_ylabel("Recall@1",      fontsize=12)
-    ax.set_title(f"Performance on {DATASET}", fontsize=14, pad=10)
+    ax.set_title(f"Recall@1 Vs TOPS on {DATASET}", fontsize=14, pad=10)
 
     # Ticks & Grid -------------------------------------------------------------
     ax.tick_params(axis="both", which="major", labelsize=10)
